@@ -1,0 +1,28 @@
+{
+  "name": "Fervio — Partenaire de tennis",
+  "short_name": "Fervio",
+  "description": "Trouvez votre partenaire de tennis en France. Gratuit et sans abonnement.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#C25228",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    }
+  ]
+}

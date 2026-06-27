@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#C25228" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Fervio — Trouvez votre partenaire de tennis en France</title>
+    <meta name="description" content="Fervio, la plateforme gratuite pour trouver un partenaire de tennis près de chez vous. Publiez une annonce de partie, rejoignez des joueurs de votre niveau et progressez ensemble." />
+    <meta name="keywords" content="partenaire de tennis, trouver partenaire tennis, partenaire raquette, trouver partenaire raquette, joueur de tennis, annonce tennis, partie de tennis, club tennis, partennis, tennis contact, sport partner" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Fervio" />
+    <link rel="canonical" href="https://fervio.fr" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://fervio.fr" />
+    <meta property="og:title" content="Fervio — Trouvez votre partenaire de tennis" />
+    <meta property="og:description" content="La plateforme gratuite pour trouver un partenaire de tennis près de chez vous. Publiez une annonce, rejoignez une partie, rencontrez des joueurs de votre niveau." />
+    <meta property="og:image" content="https://fervio.fr/og-image.png" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="Fervio" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@FervioFr" />
+    <meta name="twitter:title" content="Fervio — Trouvez votre partenaire de tennis" />
+    <meta name="twitter:description" content="La plateforme gratuite pour trouver un partenaire de tennis près de chez vous." />
+    <meta name="twitter:image" content="https://fervio.fr/og-image.png" />
+
+    <!-- Schema.org — WebSite avec SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Fervio",
+      "url": "https://fervio.fr",
+      "description": "Plateforme gratuite pour trouver un partenaire de tennis en France. Annonces de parties, annuaire de joueurs, messagerie.",
+      "inLanguage": "fr-FR",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://fervio.fr/joueurs?city={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- Schema.org — Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Fervio",
+      "url": "https://fervio.fr",
+      "logo": "https://fervio.fr/favicon-96x96.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@fervio.fr",
+        "contactType": "customer support",
+        "availableLanguage": "French"
+      }
+    }
+    </script>
+
+    <!-- Schema.org — WebApplication -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Fervio",
+      "url": "https://fervio.fr",
+      "applicationCategory": "SportsApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "description": "Application web gratuite pour trouver un partenaire de tennis en France."
+    }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

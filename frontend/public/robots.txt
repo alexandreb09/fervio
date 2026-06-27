@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+Disallow: /profil
+Disallow: /messages
+Disallow: /annonces/nouvelle
+
+Sitemap: https://sportio.fr/sitemap.xml

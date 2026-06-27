@@ -1,0 +1,31 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block main %}
+<div style="padding: 24px 0;">
+    <h2 style="font-size:20px;font-weight:700;margin:0 0 8px;">Bienvenue dans l'administration</h2>
+    <p style="color:#64748b;margin:0 0 32px;">Gérez les joueurs, les annonces et les messages de la plateforme.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\UserCrudController') }}"
+           style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;text-decoration:none;color:#0f172a;">
+            <div style="font-size:28px;margin-bottom:8px;">👥</div>
+            <div style="font-weight:700;margin-bottom:4px;">Joueurs</div>
+            <div style="font-size:13px;color:#64748b;">Gérer les comptes utilisateurs</div>
+        </a>
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\GameProposalCrudController') }}"
+           style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;text-decoration:none;color:#0f172a;">
+            <div style="font-size:28px;margin-bottom:8px;">📅</div>
+            <div style="font-weight:700;margin-bottom:4px;">Annonces</div>
+            <div style="font-size:13px;color:#64748b;">Modérer les parties publiées</div>
+        </a>
+        <a href="{{ ea_url().setController('App\\Controller\\Admin\\MessageCrudController') }}"
+           style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;text-decoration:none;color:#0f172a;">
+            <div style="font-size:28px;margin-bottom:8px;">✉️</div>
+            <div style="font-weight:700;margin-bottom:4px;">Messages</div>
+            <div style="font-size:13px;color:#64748b;">Consulter les échanges</div>
+        </a>
+    </div>
+</div>
+{% endblock %}

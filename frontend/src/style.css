@@ -1,0 +1,311 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Palette ─────────────────────────────────────────────────
+   Modifier les couleurs ici ET dans le thème Vuetify (main.js).
+   Tout le reste du CSS utilise ces variables.
+──────────────────────────────────────────────────────────── */
+:root {
+  --c-primary:    #C25228;
+  --c-primary-dk: #A33F18;
+  --c-primary-bg: #FEF0E6;
+  --c-bg:         #FAF5EF;
+  --c-hover:      #F5EDE4;
+  --c-border:     #E8D4C0;
+  --c-border-lt:  #CDB8A8;
+  --c-text:       #1A0F08;
+  --c-text-md:    #78604E;
+  --c-text-sm:    #9A7B6A;
+  --c-text-muted: #6B4A38;
+  --c-text-dk:    #3D2A20;
+  --c-focus:      rgba(194, 82, 40, 0.12);
+  --c-error:      #EF4444;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--c-bg); font-family: 'Inter', system-ui, sans-serif; }
+
+/* ── Base ── */
+.v-application {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  background: var(--c-bg) !important;
+  color: var(--c-text) !important;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4,
+.v-application .text-h2,
+.v-application .text-h3,
+.v-application .text-h4,
+.v-application .text-h5 {
+  font-family: 'Inter', sans-serif !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* ── Cards — no shadow, just border ── */
+.v-card {
+  border-radius: 12px !important;
+  border: 1px solid var(--c-border) !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+.v-card.v-card--hover:hover {
+  border-color: var(--c-border-lt) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+  transition: all 0.15s ease !important;
+}
+
+/* ── Buttons ── */
+.v-btn {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  text-transform: none !important;
+  border-radius: 8px !important;
+}
+
+/* ── Form fields (Vuetify outlined) ── */
+.v-field {
+  border-radius: 8px !important;
+  font-family: 'Inter', sans-serif !important;
+}
+/* Focus ring via shadow */
+.v-field--focused {
+  box-shadow: 0 0 0 3px var(--c-focus) !important;
+}
+
+/* Native inputs/selects - no browser focus ring */
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: none !important;
+}
+
+/* ── Chips ── */
+.v-chip {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+}
+
+/* ── Skeleton ── */
+.v-skeleton-loader { border-radius: 12px !important; }
+
+/* ── Utility ── */
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.h-100 { height: 100%; }
+.overflow-y-auto { overflow-y: auto; }
+
+/* ── Fintech label ── */
+.fin-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--c-primary);
+}
+
+/* ── Fin card ── */
+.fin-card {
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.fin-card:hover {
+  border-color: var(--c-border-lt);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+
+/* ── Fin stat ── */
+.fin-stat {
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-align: center;
+}
+
+/* ── Badge ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.badge-green  { background: #F0FDF4; color: #16A34A; }
+.badge-amber  { background: #FFFBEB; color: #B45309; }
+.badge-blue   { background: #EFF6FF; color: #2563EB; }
+.badge-purple { background: var(--c-primary-bg); color: var(--c-primary); }
+.badge-gray   { background: var(--c-bg); color: var(--c-text-muted); }
+.badge-red    { background: #FEF2F2; color: #B91C1C; }
+.badge-pink   { background: #FDF2F8; color: #BE185D; }
+
+/* ── Info row ── */
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--c-hover);
+}
+.info-row:last-child { border-bottom: none; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--c-border-lt); border-radius: 99px; }
+
+/* ── Page layout ── */
+.page { max-width: 1120px; margin: 0 auto; padding: 40px 24px; }
+.page-sm { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
+.page-xs { max-width: 440px; margin: 0 auto; padding: 40px 16px; }
+
+/* ── Native form fields ── */
+.field-input,
+.field-select {
+  width: 100%;
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: Inter, sans-serif;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  outline: none;
+  color: var(--c-text);
+  box-sizing: border-box;
+  transition: border-color 0.1s;
+}
+.field-select { background: #fff; }
+.field-input:focus,
+.field-select:focus { border-color: var(--c-primary); }
+.field-input--sm,
+.field-select--sm { padding: 8px 10px; font-size: 13px; border-radius: 7px; }
+.field-input--error { border-color: var(--c-error) !important; }
+.field-input--pwd { padding-right: 40px; }
+
+/* ── Field label / error ── */
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text-dk);
+  margin-bottom: 6px;
+}
+.field-label--sm { font-size: 12px; margin-bottom: 5px; }
+.field-error {
+  font-size: 12px;
+  color: var(--c-error);
+  margin: 4px 0 0;
+}
+
+/* ── Section label (Identité, Profil tennis, etc.) ── */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin: 0 0 14px;
+}
+
+/* ── Error / success banners ── */
+.error-banner {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #B91C1C;
+  font-weight: 500;
+}
+.suspended-banner {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.suspended-banner strong {
+  display: block;
+  font-size: 13px;
+  color: #DC2626;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.suspended-banner p {
+  font-size: 12px;
+  color: #B91C1C;
+  line-height: 1.5;
+  margin: 0;
+}
+.suspended-banner a { color: #DC2626; }
+.success-banner {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: 8px;
+  padding: 9px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #16A34A;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* ── Native buttons ── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: Inter, sans-serif;
+  background: var(--c-primary) !important;
+  color: #fff !important;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.1s;
+  text-decoration: none;
+}
+.btn-primary:hover:not(:disabled) { background: var(--c-primary-dk) !important; }
+.btn-primary:disabled { opacity: 0.65; cursor: default; }
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: Inter, sans-serif;
+  background: #fff;
+  color: var(--c-text-muted);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+.btn-secondary:hover { border-color: var(--c-border-lt); }
+
+/* ── Form divider ── */
+.form-divider { height: 1px; background: var(--c-hover); margin: 16px 0; }
+
+/* ── Badge modifiers ── */
+.badge--xs { padding: 1px 6px; font-size: 10px; }
+.badge--sm { padding: 2px 8px; font-size: 11px; }
+.badge--md { font-size: 13px; padding: 4px 10px; }
+.ml-auto { margin-left: auto; }
