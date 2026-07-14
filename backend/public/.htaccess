@@ -1,0 +1,16 @@
+Options -MultiViews
+RewriteEngine On
+
+# Transmet le header Authorization à PHP (strippé par Apache sur hébergement partagé)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# HTTP → HTTPS (OVH utilise X-Forwarded-Proto)
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Sert les fichiers statiques directement
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# Tout le reste → Symfony front controller
+RewriteRule ^ index.php [QSA,L]

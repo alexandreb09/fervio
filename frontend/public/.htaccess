@@ -1,0 +1,18 @@
+Options -MultiViews
+RewriteEngine On
+
+# www → non-www (inclut la montée en HTTPS en une seule redirection)
+RewriteCond %{HTTP_HOST} ^www\.fervio\.fr [NC]
+RewriteRule ^ https://fervio.fr%{REQUEST_URI} [L,R=301]
+
+# HTTP → HTTPS (OVH utilise X-Forwarded-Proto)
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Sert les fichiers existants directement
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Tout le reste → index.html (routage Vue)
+RewriteRule ^ index.html [QSA,L]
