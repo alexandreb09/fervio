@@ -6,11 +6,13 @@ use App\Entity\GameProposal;
 use App\Entity\User;
 use App\Repository\GameProposalRepository;
 use App\Repository\UserRepository;
+use App\Service\FervioEmail;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -173,7 +175,9 @@ class GameProposalController extends AbstractController
     public function join(
         #[MapEntity(mapping: ['publicId' => 'publicId'])] GameProposal $proposal,
         EntityManagerInterface $em,
-        NormalizerInterface $normalizer
+        NormalizerInterface $normalizer,
+        MailerInterface $mailer,
+        FervioEmail $fervioEmail,
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
@@ -198,6 +202,30 @@ class GameProposalController extends AbstractController
         }
 
         $em->flush();
+
+        $author = $proposal->getAuthor();
+        if ($author->isNotifyProposalReplies()) {
+            $joiner     = $user->getFirstName() . ($user->getLastName() ? ' ' . $user->getLastName() : '');
+            $proposalUrl = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/') . '/annonces/' . $proposal->getPublicId();
+
+            $body = '<p style="margin:0 0 16px;font-size:15px;color:#78604E;line-height:1.6;">'
+                . htmlspecialchars($joiner, ENT_QUOTES) . ' vient de rejoindre votre annonce :'
+                . '</p>'
+                . '<p style="margin:0 0 24px;font-size:15px;font-weight:700;color:#3D2A20;">'
+                . htmlspecialchars($proposal->getTitle(), ENT_QUOTES)
+                . '</p>'
+                . FervioEmail::button($proposalUrl, 'Voir l\'annonce')
+                . FervioEmail::fallbackLink($proposalUrl);
+
+            try {
+                $mailer->send($fervioEmail->build(
+                    $author->getEmail(),
+                    'Quelqu\'un a rejoint votre partie — Fervio',
+                    $author->getFirstName(),
+                    $body
+                ));
+            } catch (\Throwable) {}
+        }
 
         return $this->json($normalizer->normalize($proposal, null, ['groups' => ['proposal:read', 'user:list']]));
     }

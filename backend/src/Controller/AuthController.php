@@ -6,13 +6,13 @@ use App\Entity\PasswordResetToken;
 use App\Entity\User;
 use App\Repository\PasswordResetTokenRepository;
 use App\Repository\UserRepository;
+use App\Service\FervioEmail;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -61,7 +61,8 @@ class AuthController extends AbstractController
         EntityManagerInterface $em,
         ValidatorInterface $validator,
         NormalizerInterface $normalizer,
-        MailerInterface $mailer
+        MailerInterface $mailer,
+        FervioEmail $fervioEmail,
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
@@ -97,19 +98,17 @@ class AuthController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        $siteUrl   = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/');
-        $verifyUrl = $siteUrl . '/confirmer-email?token=' . $token;
-        $fromEmail = $_ENV['MAILER_FROM_EMAIL'] ?? 'noreply@fervio.fr';
-        $fromName  = $_ENV['MAILER_FROM_NAME']  ?? 'Fervio';
+        $verifyUrl = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/') . '/confirmer-email?token=' . $token;
+
+        $body = '<p style="margin:0 0 24px;font-size:15px;color:#78604E;line-height:1.6;">'
+            . 'Merci de vous être inscrit sur Fervio ! Il ne reste qu\'une étape : confirmer votre adresse email pour activer votre compte.'
+            . '</p>'
+            . FervioEmail::button($verifyUrl, 'Confirmer mon adresse email')
+            . FervioEmail::fallbackLink($verifyUrl)
+            . '<p style="margin:0;font-size:13px;color:#9A7B6A;">Si vous n\'avez pas créé de compte sur Fervio, ignorez cet email.</p>';
 
         try {
-            $message = (new Email())
-                ->from("$fromName <$fromEmail>")
-                ->to($user->getEmail())
-                ->subject('Confirmez votre adresse email — Fervio')
-                ->html($this->buildVerificationEmailHtml($user->getFirstName(), $verifyUrl));
-
-            $mailer->send($message);
+            $mailer->send($fervioEmail->build($user->getEmail(), 'Confirmez votre adresse email — Fervio', $user->getFirstName(), $body));
         } catch (\Throwable) {
             // L'email n'a pas pu être envoyé mais le compte est créé
         }
@@ -142,57 +141,6 @@ class AuthController extends AbstractController
         return $this->json(['message' => 'Email confirmé avec succès.']);
     }
 
-    private function buildVerificationEmailHtml(string $firstName, string $verifyUrl): string
-    {
-        return <<<HTML
-        <!DOCTYPE html>
-        <html lang="fr">
-        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-        <body style="margin:0;padding:0;background:#FAF5EF;font-family:'Inter',Arial,sans-serif;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF5EF;padding:40px 16px;">
-            <tr><td align="center">
-              <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;border:1px solid #E8D4C0;overflow:hidden;">
-                <tr>
-                  <td style="background:#C25228;padding:28px 32px;text-align:center;">
-                    <span style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.03em;">Ferv<span style="opacity:0.75">io</span></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:36px 32px;">
-                    <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#1A0F08;">Bonjour {$firstName} 👋</p>
-                    <p style="margin:0 0 24px;font-size:15px;color:#78604E;line-height:1.6;">
-                      Merci de vous être inscrit sur Fervio ! Il ne reste qu'une étape : confirmer votre adresse email pour activer votre compte.
-                    </p>
-                    <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
-                      <tr>
-                        <td style="background:#C25228;border-radius:10px;">
-                          <a href="{$verifyUrl}" style="display:inline-block;padding:14px 28px;color:#fff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:-0.01em;">
-                            Confirmer mon adresse email
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                    <p style="margin:0 0 8px;font-size:13px;color:#9A7B6A;line-height:1.5;">
-                      Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :
-                    </p>
-                    <p style="margin:0 0 24px;font-size:12px;color:#C25228;word-break:break-all;">{$verifyUrl}</p>
-                    <p style="margin:0;font-size:13px;color:#9A7B6A;">
-                      Si vous n'avez pas créé de compte sur Fervio, ignorez cet email.
-                    </p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background:#FEF0E6;padding:16px 32px;text-align:center;border-top:1px solid #E8D4C0;">
-                    <p style="margin:0;font-size:12px;color:#9A7B6A;">Fervio · Cet email est envoyé automatiquement, merci de ne pas y répondre.</p>
-                  </td>
-                </tr>
-              </table>
-            </td></tr>
-          </table>
-        </body>
-        </html>
-        HTML;
-    }
 
     #[Route('/me', name: 'api_me', methods: ['GET'])]
     public function me(NormalizerInterface $normalizer): JsonResponse
@@ -210,7 +158,8 @@ class AuthController extends AbstractController
         UserRepository $userRepo,
         PasswordResetTokenRepository $tokenRepo,
         EntityManagerInterface $em,
-        MailerInterface $mailer
+        MailerInterface $mailer,
+        FervioEmail $fervioEmail,
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
         $email = trim($data['email'] ?? '');
@@ -235,22 +184,20 @@ class AuthController extends AbstractController
         $em->persist($resetToken);
         $em->flush();
 
-        $frontendUrl = $_ENV['DEFAULT_URI'] ?? 'http://localhost:5173';
-        $resetUrl = $frontendUrl . '/reinitialiser-mot-de-passe?token=' . $resetToken->getToken();
+        $resetUrl = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/') . '/reinitialiser-mot-de-passe?token=' . $resetToken->getToken();
 
-        $fromEmail = $_ENV['MAILER_FROM_EMAIL'] ?? 'noreply@fervio.fr';
-        $fromName  = $_ENV['MAILER_FROM_NAME'] ?? 'Fervio';
-
-        $htmlBody = $this->buildResetEmailHtml($user->getFirstName(), $resetUrl);
-
-        $message = (new Email())
-            ->from("$fromName <$fromEmail>")
-            ->to($user->getEmail())
-            ->subject('Réinitialisation de votre mot de passe — Fervio')
-            ->html($htmlBody);
+        $body = '<p style="margin:0 0 24px;font-size:15px;color:#78604E;line-height:1.6;">'
+            . 'Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte. '
+            . 'Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.'
+            . '</p>'
+            . FervioEmail::button($resetUrl, 'Réinitialiser mon mot de passe')
+            . '<p style="margin:0 0 8px;font-size:13px;color:#9A7B6A;line-height:1.5;">'
+            . 'Ce lien est valable <strong>1 heure</strong>. Si vous n\'avez pas demandé de réinitialisation, ignorez cet email — votre mot de passe reste inchangé.'
+            . '</p>'
+            . FervioEmail::fallbackLink($resetUrl);
 
         try {
-            $mailer->send($message);
+            $mailer->send($fervioEmail->build($user->getEmail(), 'Réinitialisation de votre mot de passe — Fervio', $user->getFirstName(), $body));
         } catch (\Throwable) {
             // L'email n'a pas pu être envoyé mais la réponse reste identique
         }
@@ -292,56 +239,4 @@ class AuthController extends AbstractController
         return $this->json(['message' => 'Mot de passe mis à jour avec succès.']);
     }
 
-    private function buildResetEmailHtml(string $firstName, string $resetUrl): string
-    {
-        return <<<HTML
-        <!DOCTYPE html>
-        <html lang="fr">
-        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-        <body style="margin:0;padding:0;background:#FAF5EF;font-family:'Inter',Arial,sans-serif;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF5EF;padding:40px 16px;">
-            <tr><td align="center">
-              <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;border:1px solid #E8D4C0;overflow:hidden;">
-                <tr>
-                  <td style="background:#C25228;padding:28px 32px;text-align:center;">
-                    <span style="color:#fff;font-size:22px;font-weight:800;letter-spacing:-0.03em;">Ferv<span style="opacity:0.75">io</span></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:36px 32px;">
-                    <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#1A0F08;">Bonjour {$firstName} 👋</p>
-                    <p style="margin:0 0 24px;font-size:15px;color:#78604E;line-height:1.6;">
-                      Nous avons reçu une demande de réinitialisation de mot de passe pour votre compte.
-                      Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.
-                    </p>
-                    <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
-                      <tr>
-                        <td style="background:#C25228;border-radius:10px;">
-                          <a href="{$resetUrl}" style="display:inline-block;padding:14px 28px;color:#fff;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:-0.01em;">
-                            Réinitialiser mon mot de passe
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                    <p style="margin:0 0 8px;font-size:13px;color:#9A7B6A;line-height:1.5;">
-                      Ce lien est valable <strong>1 heure</strong>. Si vous n'avez pas demandé de réinitialisation, ignorez cet email — votre mot de passe reste inchangé.
-                    </p>
-                    <p style="margin:0 0 8px;font-size:13px;color:#9A7B6A;line-height:1.5;">
-                      Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :
-                    </p>
-                    <p style="margin:0;font-size:12px;color:#C25228;word-break:break-all;">{$resetUrl}</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background:#FEF0E6;padding:16px 32px;text-align:center;border-top:1px solid #E8D4C0;">
-                    <p style="margin:0;font-size:12px;color:#9A7B6A;">Fervio · Cet email est envoyé automatiquement, merci de ne pas y répondre.</p>
-                  </td>
-                </tr>
-              </table>
-            </td></tr>
-          </table>
-        </body>
-        </html>
-        HTML;
-    }
 }
