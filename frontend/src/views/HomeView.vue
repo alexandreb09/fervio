@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api'
+import { STORAGE_BASE } from '@/utils/avatar'
 import { CITIES } from '@/data/cities'
 import { FAQ_ITEMS } from '@/data/faq'
 
@@ -49,7 +50,8 @@ function accent(u) {
 
 function avatarUrl(u) {
   const c = accent(u)
-  return u?.avatar ? u.avatar : `https://ui-avatars.com/api/?name=${u?.firstName}+${u?.lastName}&background=F5F0EB&color=${c}&bold=true`
+  if (u?.avatar) return u.avatar.startsWith('http') ? u.avatar : `${STORAGE_BASE}${u.avatar}`
+  return `https://ui-avatars.com/api/?name=${u?.firstName}+${u?.lastName}&background=F5F0EB&color=${c}&bold=true`
 }
 </script>
 
@@ -69,7 +71,7 @@ function avatarUrl(u) {
           Partenaire raquette · Gratuit · France
         </span>
         <h1 class="hero-title">
-          Trouvez votre<br>partenaire<br>de tennis.
+          Trouvez votre<br>partenaire<br>de tennis
         </h1>
         <p class="hero-subtitle">
           Rejoignez des joueurs de votre niveau près de chez vous. Publiez une annonce, rejoignez une partie, progressez ensemble.
@@ -241,6 +243,7 @@ function avatarUrl(u) {
           >
             {{ c.name }}
           </router-link>
+          <span class="city-chip city-chip--more">et bien d'autres…</span>
         </div>
       </section>
 
@@ -537,6 +540,7 @@ function avatarUrl(u) {
   transition: all 0.12s;
 }
 .city-chip:hover { color: var(--c-primary); border-color: var(--c-primary); background: var(--c-primary-bg); }
+.city-chip--more { color: var(--c-text-sm); border-style: dashed; cursor: default; font-style: italic; }
 
 /* ── FAQ ── */
 .faq-list { display: flex; flex-direction: column; gap: 8px; }

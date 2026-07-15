@@ -19,7 +19,7 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('Sportio — Admin')
+            ->setTitle('Fervio — Admin')
             ->setFaviconPath('favicon.ico')
             ->renderContentMaximized();
     }
@@ -35,6 +35,6 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Modération');
         yield MenuItem::linkToRoute('Signalements', 'fa fa-flag', 'admin_report_index');
         yield MenuItem::section('');
-        yield MenuItem::linkToUrl('Retour au site', 'fa fa-arrow-left', '/');
+        yield MenuItem::linkToUrl('Retour au site', 'fa fa-arrow-left', 'https://fervio.fr/');
     }
 }

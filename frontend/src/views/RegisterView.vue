@@ -27,7 +27,7 @@ async function submit() {
   loading.value = true
   try {
     await auth.register(form.value)
-    router.push('/verifier-email')
+    router.push({ path: '/verifier-email', query: { email: form.value.email } })
   } catch (e) {
     if (e.response?.status === 422) fieldErrors.value = e.response.data.errors || {}
     else error.value = e.response?.data?.error || 'Une erreur est survenue.'
@@ -63,8 +63,8 @@ async function submit() {
               <p v-if="fieldErrors.firstName" class="field-error">{{ fieldErrors.firstName }}</p>
             </div>
             <div class="form-field">
-              <label class="field-label">Nom *</label>
-              <input v-model="form.lastName" required placeholder="Martin"
+              <label class="field-label">Nom <span class="label-optional">(optionnel)</span></label>
+              <input v-model="form.lastName" placeholder="Martin"
                 class="field-input" :class="{ 'field-input--error': fieldErrors.lastName }" />
               <p v-if="fieldErrors.lastName" class="field-error">{{ fieldErrors.lastName }}</p>
             </div>
@@ -163,6 +163,7 @@ async function submit() {
 .form-field { margin-bottom: 12px; }
 .form-field--last { margin-bottom: 20px; }
 .section-label-optional { font-weight: 400; color: var(--c-text-sm); text-transform: none; letter-spacing: 0; font-size: 12px; }
+.label-optional { font-weight: 400; color: var(--c-text-sm); font-size: 12px; }
 .auth-submit { width: 100%; padding: 11px; font-size: 14px; }
 .auth-footer { text-align: center; font-size: 13px; color: var(--c-text-md); margin-top: 20px; }
 .auth-footer-link { color: var(--c-primary); font-weight: 600; text-decoration: none; }

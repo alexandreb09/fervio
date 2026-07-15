@@ -359,8 +359,8 @@ function proposalMonth(d) {
             rows="4"
           />
           <div class="dialog-actions">
-            <button class="btn-cancel" @click="msgDialog = false">Annuler</button>
-            <button class="btn-send" :disabled="msgSending || !msgText.trim()" @click="sendMessage">
+            <button type="button" class="btn-cancel" @click="msgDialog = false">Annuler</button>
+            <button type="button" class="btn-send" :disabled="msgSending || !msgText.trim()" @click="sendMessage">
               <v-progress-circular v-if="msgSending" size="14" width="2" color="white" indeterminate />
               <v-icon v-else size="14">mdi-send</v-icon>
               {{ msgSending ? 'Envoi…' : 'Envoyer' }}

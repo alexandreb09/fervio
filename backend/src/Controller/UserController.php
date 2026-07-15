@@ -168,7 +168,7 @@ class UserController extends AbstractController
         $data = json_decode($request->getContent(), true) ?? [];
 
         if (isset($data['firstName']))                         $user->setFirstName($data['firstName']);
-        if (array_key_exists('lastName', $data))               $user->setLastName($data['lastName'] ?? '');
+        if (array_key_exists('lastName', $data))               $user->setLastName(!empty($data['lastName']) ? $data['lastName'] : null);
         if (!empty($data['email']))                            $user->setEmail($data['email']);
         if (array_key_exists('city', $data))                   $user->setCity($data['city']);
         if (array_key_exists('fftRanking', $data))             $user->setFftRanking($data['fftRanking'] ?: null);

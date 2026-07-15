@@ -72,7 +72,7 @@ class AuthController extends AbstractController
         $user = new User();
         $user->setEmail($data['email'] ?? '');
         $user->setFirstName($data['firstName'] ?? '');
-        $user->setLastName($data['lastName'] ?? '');
+        $user->setLastName(!empty($data['lastName']) ? $data['lastName'] : null);
         $user->setCity($data['city'] ?? null);
         $user->setFftRanking(!empty($data['fftRanking']) ? $data['fftRanking'] : null);
         $user->setGender($data['gender'] ?? null);

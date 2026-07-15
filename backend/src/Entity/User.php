@@ -47,7 +47,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:list', 'proposal:read', 'message:read'])]
     private ?string $firstName = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     #[Assert\Length(max: 50)]
     #[Groups(['user:read', 'user:list', 'proposal:read', 'message:read'])]
     private ?string $lastName = null;
@@ -185,7 +185,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstName(string $firstName): static { $this->firstName = $firstName; return $this; }
 
     public function getLastName(): ?string { return $this->lastName; }
-    public function setLastName(string $lastName): static { $this->lastName = $lastName; return $this; }
+    public function setLastName(?string $lastName): static { $this->lastName = $lastName ?: null; return $this; }
 
     public function getCity(): ?string { return $this->city; }
     public function setCity(?string $city): static { $this->city = $city; return $this; }

@@ -13,15 +13,24 @@ const partners = usePartnersStore()
 const { isLoggedIn, user } = storeToRefs(auth)
 const { unreadCount } = storeToRefs(messages)
 const drawer = ref(false)
+const newMsgSnackbar = ref(false)
+const prevUnread = ref(-1)
 
 function logout() { auth.logout(); partners.reset(); router.push('/') }
 
 onMounted(() => { if (isLoggedIn.value) messages.fetchUnread() })
 
+watch(unreadCount, (newVal) => {
+  if (prevUnread.value >= 0 && newVal > prevUnread.value) newMsgSnackbar.value = true
+  prevUnread.value = newVal
+})
+
 watch(isLoggedIn, (val) => {
   if (val) {
     messages.fetchUnread()
     const t = setInterval(() => { if (isLoggedIn.value) messages.fetchUnread(); else clearInterval(t) }, 15000)
+  } else {
+    prevUnread.value = -1
   }
 })
 </script>
@@ -52,15 +61,35 @@ watch(isLoggedIn, (val) => {
 
         <!-- Desktop auth -->
         <div class="d-none d-md-flex align-center nav-auth">
-          <template v-if="isLoggedIn">
-            <router-link to="/annonces/nouvelle" class="btn-propose">
-              <v-icon size="14">mdi-plus</v-icon> Proposer une partie
-            </router-link>
+          <router-link to="/annonces/nouvelle" class="btn-propose">
+            <v-icon size="14">mdi-plus</v-icon> Proposer une partie
+          </router-link>
 
-            <router-link to="/messages" class="btn-bell">
-              <v-icon size="18">mdi-bell-outline</v-icon>
-              <span v-if="unreadCount > 0" class="unread-dot" />
-            </router-link>
+          <template v-if="isLoggedIn">
+            <!-- Bell with notification dropdown -->
+            <v-menu transition="slide-y-transition" :offset="[4, 0]">
+              <template #activator="{ props }">
+                <button v-bind="props" class="btn-bell" aria-label="Notifications">
+                  <v-icon size="18">mdi-bell-outline</v-icon>
+                  <span v-if="unreadCount > 0" class="unread-dot" />
+                </button>
+              </template>
+              <div class="notif-dropdown">
+                <div class="notif-header">Notifications</div>
+                <div v-if="unreadCount === 0" class="notif-empty">
+                  <v-icon size="24" color="border-light">mdi-bell-off-outline</v-icon>
+                  <span>Aucune notification</span>
+                </div>
+                <router-link v-else to="/messages" class="notif-item">
+                  <v-icon size="15" color="primary">mdi-message-outline</v-icon>
+                  <span>{{ unreadCount }} message{{ unreadCount > 1 ? 's' : '' }} non lu{{ unreadCount > 1 ? 's' : '' }}</span>
+                  <span class="badge badge-red badge--xs ml-auto">{{ unreadCount }}</span>
+                </router-link>
+                <div class="notif-footer">
+                  <router-link to="/messages" class="notif-all-link">Voir tous les messages →</router-link>
+                </div>
+              </div>
+            </v-menu>
 
             <!-- User menu -->
             <v-menu transition="slide-y-transition" :offset="[4, 0]">
@@ -127,11 +156,12 @@ watch(isLoggedIn, (val) => {
           <v-icon size="17" color="primary">{{ item.icon }}</v-icon> {{ item.label }}
         </router-link>
 
+        <div class="drawer-divider" />
+        <router-link to="/annonces/nouvelle" class="drawer-link" @click="drawer = false">
+          <v-icon size="17" color="primary">mdi-plus-circle</v-icon> Proposer une partie
+        </router-link>
+
         <template v-if="isLoggedIn">
-          <div class="drawer-divider" />
-          <router-link to="/annonces/nouvelle" class="drawer-link" @click="drawer = false">
-            <v-icon size="17" color="primary">mdi-plus-circle</v-icon> Proposer une partie
-          </router-link>
           <router-link to="/messages" class="drawer-link" @click="drawer = false">
             <v-icon size="17" color="primary">mdi-message</v-icon> Messages
             <span v-if="unreadCount > 0" class="badge badge-red badge--xs ml-auto">{{ unreadCount }}</span>
@@ -180,6 +210,27 @@ watch(isLoggedIn, (val) => {
         </div>
       </div>
     </footer>
+
+    <!-- New message notification -->
+    <v-snackbar
+      v-model="newMsgSnackbar"
+      location="top right"
+      color="surface"
+      :timeout="5000"
+      rounded="lg"
+      elevation="4"
+    >
+      <div class="snackbar-msg">
+        <v-icon size="17" color="primary">mdi-message-outline</v-icon>
+        <span>Vous avez reçu un nouveau message</span>
+      </div>
+      <template #actions>
+        <router-link to="/messages" class="snackbar-link" @click="newMsgSnackbar = false">Voir</router-link>
+        <v-btn icon size="x-small" variant="text" @click="newMsgSnackbar = false">
+          <v-icon size="14">mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-app>
 </template>
 
@@ -286,6 +337,58 @@ watch(isLoggedIn, (val) => {
   background: var(--c-error);
   border: 1.5px solid #fff;
 }
+
+/* ── Notification dropdown ── */
+.notif-dropdown {
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  min-width: 220px;
+  padding: 6px;
+  margin-top: 4px;
+}
+.notif-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 8px 6px;
+}
+.notif-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px;
+  color: var(--c-text-sm);
+  font-size: 13px;
+}
+.notif-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  text-decoration: none;
+  color: var(--c-text-dk);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.1s;
+}
+.notif-item:hover { background: var(--c-bg); }
+.notif-footer {
+  border-top: 1px solid var(--c-hover);
+  padding: 6px 8px 2px;
+  margin-top: 4px;
+}
+.notif-all-link {
+  font-size: 12px;
+  color: var(--c-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.notif-all-link:hover { text-decoration: underline; }
 
 /* ── User menu ── */
 .user-menu-btn {
@@ -448,6 +551,11 @@ watch(isLoggedIn, (val) => {
   transition: background 0.1s;
 }
 .drawer-register:hover { background: var(--c-primary-dk); }
+
+/* ── New message snackbar ── */
+.snackbar-msg { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--c-text-dk); }
+.snackbar-link { font-size: 13px; font-weight: 700; color: var(--c-primary); text-decoration: none; padding: 4px 8px; }
+.snackbar-link:hover { text-decoration: underline; }
 
 /* ── Main ── */
 .app-main { min-height: calc(100vh - 60px); }

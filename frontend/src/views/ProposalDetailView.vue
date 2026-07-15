@@ -39,7 +39,7 @@ async function joinLeave() {
   actionLoading.value = true
   try {
     const ep = isParticipant.value ? 'leave' : 'join'
-    const res = await api.post(`/proposals/${proposal.value.id}/${ep}`)
+    const res = await api.post(`/proposals/${route.params.id}/${ep}`)
     proposal.value = res.data
   } finally { actionLoading.value = false }
 }
@@ -48,7 +48,7 @@ async function sendMessage() {
   if (!msgText.value.trim()) return
   msgSending.value = true
   try {
-    await api.post('/messages', { recipientId: proposal.value.author.id, content: msgText.value.trim() })
+    await api.post('/messages', { receiverPublicId: proposal.value.author.publicId, content: msgText.value.trim() })
     msgSent.value = true
     setTimeout(() => { msgDialog.value = false; msgSent.value = false; msgText.value = '' }, 1800)
   } finally { msgSending.value = false }
@@ -158,8 +158,8 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
               </v-avatar>
               <div class="participant-info">
                 <span class="participant-name">{{ proposal.author.firstName }} {{ proposal.author.lastName }}</span>
-                <span class="badge badge-purple badge--xs">Organisateur</span>
               </div>
+              <span class="badge badge-purple badge--xs">Organisateur</span>
               <span v-if="proposal.author.fftRanking" class="badge badge-gray">{{ proposal.author.fftRanking }}</span>
             </router-link>
             <!-- Joined participants -->

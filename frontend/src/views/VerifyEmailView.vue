@@ -1,3 +1,8 @@
+<script setup>
+import { useRoute } from 'vue-router'
+const email = useRoute().query.email || ''
+</script>
+
 <template>
   <div class="auth-page">
     <div class="auth-container">
@@ -12,7 +17,10 @@
       <div class="auth-card">
         <div class="verify-body">
           <p class="verify-text">
-            Un email de confirmation vient d'être envoyé à votre adresse. Cliquez sur le lien qu'il contient pour activer votre compte.
+            Un email de confirmation vient d'être envoyé à
+            <template v-if="email"><strong class="verify-email">{{ email }}</strong>.</template>
+            <template v-else>votre adresse.</template>
+            Cliquez sur le lien qu'il contient pour activer votre compte.
           </p>
           <div class="verify-tips">
             <p class="tips-title">Vous ne voyez pas l'email ?</p>
@@ -64,6 +72,7 @@
 }
 .verify-body { display: flex; flex-direction: column; gap: 20px; }
 .verify-text { font-size: 14px; color: var(--c-text); line-height: 1.6; margin: 0; }
+.verify-email { color: var(--c-primary); font-weight: 700; word-break: break-all; }
 .verify-tips {
   background: var(--c-bg);
   border: 1px solid var(--c-border);
