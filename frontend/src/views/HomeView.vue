@@ -2,8 +2,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api'
+import { CITIES } from '@/data/cities'
+import { FAQ_ITEMS } from '@/data/faq'
 
 const router = useRouter()
+const popularCities = CITIES.slice(0, 8)
 const search = ref('')
 const recentProposals = ref([])
 const recentPlayers = ref([])
@@ -178,7 +181,7 @@ function avatarUrl(u) {
             :style="{ '--accent': `#${accent(p)}` }"
           >
             <v-avatar size="52" class="player-card-avatar">
-              <v-img :src="avatarUrl(p)" />
+              <v-img :src="avatarUrl(p)" :alt="`Photo de ${p.firstName} ${p.lastName}`" />
             </v-avatar>
             <div class="player-card-name">{{ p.firstName }} {{ p.lastName }}</div>
             <div class="player-card-city">{{ p.city || '—' }}</div>
@@ -218,6 +221,42 @@ function avatarUrl(u) {
           <router-link to="/inscription" class="btn-primary">
             Rejoindre gratuitement →
           </router-link>
+        </div>
+      </section>
+
+      <!-- ── Villes populaires ── -->
+      <section class="home-section cities-section">
+        <div class="section-header">
+          <div>
+            <p class="fin-label section-header-label">Partout en France</p>
+            <h2 class="section-title">Partenaire de tennis par ville</h2>
+          </div>
+        </div>
+        <div class="cities-row">
+          <router-link
+            v-for="c in popularCities"
+            :key="c.slug"
+            :to="`/partenaire-tennis/${c.slug}`"
+            class="city-chip"
+          >
+            {{ c.name }}
+          </router-link>
+        </div>
+      </section>
+
+      <!-- ── FAQ ── -->
+      <section class="home-section faq-section">
+        <div class="section-header">
+          <div>
+            <p class="fin-label section-header-label">Questions fréquentes</p>
+            <h2 class="section-title">Tout savoir sur Fervio</h2>
+          </div>
+        </div>
+        <div class="faq-list">
+          <details v-for="item in FAQ_ITEMS" :key="item.question" class="faq-item">
+            <summary class="faq-question">{{ item.question }}</summary>
+            <p class="faq-answer">{{ item.answer }}</p>
+          </details>
         </div>
       </section>
     </div>
@@ -483,4 +522,31 @@ function avatarUrl(u) {
 .how-step-title { font-size: 14px; font-weight: 700; color: var(--c-text); margin-bottom: 6px; letter-spacing: -0.01em; }
 .how-step-desc { font-size: 13px; color: var(--c-text-md); line-height: 1.5; }
 .how-cta { text-align: center; }
+
+/* ── Villes populaires ── */
+.cities-section { margin-top: 44px; }
+.cities-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.city-chip {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-text-muted);
+  text-decoration: none;
+  padding: 7px 16px;
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  transition: all 0.12s;
+}
+.city-chip:hover { color: var(--c-primary); border-color: var(--c-primary); background: var(--c-primary-bg); }
+
+/* ── FAQ ── */
+.faq-list { display: flex; flex-direction: column; gap: 8px; }
+.faq-item {
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 10px;
+  padding: 14px 18px;
+}
+.faq-question { font-size: 14px; font-weight: 700; color: var(--c-text); cursor: pointer; list-style: none; }
+.faq-question::-webkit-details-marker { display: none; }
+.faq-answer { font-size: 13px; color: var(--c-text-md); line-height: 1.6; margin: 10px 0 0; }
 </style>

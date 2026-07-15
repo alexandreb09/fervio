@@ -16,6 +16,7 @@ const msgDialog = ref(false)
 const msgText = ref('')
 const msgSending = ref(false)
 const msgSent = ref(false)
+const msgError = ref('')
 
 const reportDialog = ref(false)
 
@@ -44,17 +45,25 @@ onMounted(async () => {
 
 async function sendMessage() {
   if (!msgText.value.trim()) return
+  msgError.value = ''
   msgSending.value = true
   try {
-    await api.post('/messages', { recipientId: player.value.id, content: msgText.value.trim() })
+    await api.post('/messages', { receiverPublicId: player.value.publicId, content: msgText.value.trim() })
     msgSent.value = true
     msgText.value = ''
-    setTimeout(() => { msgDialog.value = false; msgSent.value = false }, 1800)
-  } finally { msgSending.value = false }
+    setTimeout(() => { msgDialog.value = false; msgSent.value = false; msgError.value = '' }, 1800)
+  } catch (e) {
+    msgError.value = e.response?.data?.error || 'Une erreur est survenue. Veuillez réessayer.'
+  } finally {
+    msgSending.value = false
+  }
 }
 
 function onContact() {
   if (auth.isLoggedIn) {
+    msgError.value = ''
+    msgSent.value = false
+    msgText.value = ''
     msgDialog.value = true
   } else {
     router.push(`/connexion?redirect=/joueurs/${player.value.publicId}`)
@@ -143,7 +152,7 @@ function proposalMonth(d) {
         <div class="profile-body">
           <div class="profile-header">
             <v-avatar size="80" class="profile-avatar">
-              <v-img :src="avatarUrl(player)" />
+              <v-img :src="avatarUrl(player)" :alt="`Photo de ${player.firstName} ${player.lastName}`" />
             </v-avatar>
             <span v-if="timeAgo(player.lastActivityAt)" class="activity-pill">
               <span class="activity-dot" />
@@ -262,7 +271,7 @@ function proposalMonth(d) {
       <div class="dialog-box">
         <div class="dialog-header">
           <v-avatar size="36">
-            <v-img :src="avatarUrl(player)" />
+            <v-img :src="avatarUrl(player)" :alt="`Photo de ${player?.firstName} ${player?.lastName}`" />
           </v-avatar>
           <div>
             <div class="dialog-player-name">{{ player?.firstName }} {{ player?.lastName }}</div>
@@ -328,7 +337,7 @@ function proposalMonth(d) {
       <div class="dialog-box">
         <div class="dialog-header">
           <v-avatar size="36">
-            <v-img :src="avatarUrl(player)" />
+            <v-img :src="avatarUrl(player)" :alt="`Photo de ${player?.firstName} ${player?.lastName}`" />
           </v-avatar>
           <div>
             <div class="dialog-player-name">{{ player?.firstName }} {{ player?.lastName }}</div>
@@ -342,6 +351,7 @@ function proposalMonth(d) {
         </div>
 
         <template v-else>
+          <div v-if="msgError" class="error-banner">{{ msgError }}</div>
           <textarea
             v-model="msgText"
             class="dialog-textarea"

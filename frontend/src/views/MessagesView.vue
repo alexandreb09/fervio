@@ -50,7 +50,7 @@ onMounted(async () => {
         <!-- Avatar with unread dot -->
         <div class="conv-avatar-wrap">
           <v-avatar size="44">
-            <v-img :src="avatarUrl(conv.partner)" />
+            <v-img :src="avatarUrl(conv.partner)" :alt="`Photo de ${conv.partner.firstName} ${conv.partner.lastName}`" />
           </v-avatar>
           <span v-if="conv.unreadCount > 0" class="conv-unread-dot">{{ conv.unreadCount }}</span>
         </div>

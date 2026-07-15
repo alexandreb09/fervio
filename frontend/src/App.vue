@@ -67,7 +67,7 @@ watch(isLoggedIn, (val) => {
               <template #activator="{ props }">
                 <button v-bind="props" class="user-menu-btn">
                   <v-avatar size="24" class="user-avatar-bg">
-                    <v-img v-if="user?.avatar" :src="user.avatar" />
+                    <v-img v-if="user?.avatar" :src="user.avatar" :alt="`Photo de ${user?.firstName} ${user?.lastName}`" />
                     <span v-else class="user-initials">{{ user?.firstName?.[0] }}{{ user?.lastName?.[0] }}</span>
                   </v-avatar>
                   <span class="user-name">{{ user?.firstName }}</span>
@@ -176,6 +176,7 @@ watch(isLoggedIn, (val) => {
         <div class="footer-links">
           <router-link to="/joueurs" class="footer-link">Joueurs</router-link>
           <router-link to="/annonces" class="footer-link">Annonces</router-link>
+          <router-link to="/pourquoi-fervio" class="footer-link">Pourquoi Fervio</router-link>
         </div>
       </div>
     </footer>

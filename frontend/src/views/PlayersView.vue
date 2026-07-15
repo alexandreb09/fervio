@@ -156,7 +156,7 @@ function genderLabel(g) {
             />
             <div class="player-card-body">
               <v-avatar size="56">
-                <v-img :src="avatarUrl(p)" />
+                <v-img :src="avatarUrl(p)" :alt="`Photo de ${p.firstName} ${p.lastName}`" />
               </v-avatar>
               <div>
                 <div class="player-card-name">{{ p.firstName }} {{ p.lastName }}</div>

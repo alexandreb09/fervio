@@ -88,7 +88,7 @@ onUnmounted(() => clearInterval(pollInterval))
           <v-icon size="18">mdi-arrow-left</v-icon>
         </router-link>
         <v-avatar size="36">
-          <v-img :src="avatarUrl(partner)" />
+          <v-img :src="avatarUrl(partner)" :alt="`Photo de ${partner?.firstName} ${partner?.lastName}`" />
         </v-avatar>
         <div class="conv-header-info">
           <div class="conv-header-name">{{ partner?.firstName }} {{ partner?.lastName }}</div>

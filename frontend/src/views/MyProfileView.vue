@@ -245,7 +245,7 @@ function surfaceLabel(v) {
           <div class="avatar-wrap" :title="uploadingAvatar ? 'Chargement…' : 'Changer la photo'"
             @click="avatarInput?.click()">
             <v-avatar size="64" class="avatar-ring">
-              <v-img :src="avatarUrl(user)" />
+              <v-img :src="avatarUrl(user)" :alt="`Photo de ${user?.firstName} ${user?.lastName}`" />
             </v-avatar>
             <div class="avatar-overlay">
               <v-icon v-if="!uploadingAvatar" size="18" color="white">mdi-camera</v-icon>
@@ -580,7 +580,7 @@ function surfaceLabel(v) {
           class="partner-card">
           <PartnerBtn :user="p" class="partner-card-btn" />
           <v-avatar size="48">
-            <v-img :src="playerAvatar(p)" />
+            <v-img :src="playerAvatar(p)" :alt="`Photo de ${p.firstName} ${p.lastName}`" />
           </v-avatar>
           <div>
             <div class="partner-card-name">{{ p.firstName }} {{ p.lastName }}</div>

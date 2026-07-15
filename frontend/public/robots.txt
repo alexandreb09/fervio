@@ -5,4 +5,4 @@ Disallow: /profil
 Disallow: /messages
 Disallow: /annonces/nouvelle
 
-Sitemap: https://sportio.fr/sitemap.xml
+Sitemap: https://fervio.fr/sitemap.xml

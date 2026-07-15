@@ -154,7 +154,7 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
               class="participant-row participant-row--link"
             >
               <v-avatar size="32">
-                <v-img :src="avatarUrl(proposal.author)" />
+                <v-img :src="avatarUrl(proposal.author)" :alt="`Photo de ${proposal.author.firstName} ${proposal.author.lastName}`" />
               </v-avatar>
               <div class="participant-info">
                 <span class="participant-name">{{ proposal.author.firstName }} {{ proposal.author.lastName }}</span>
@@ -170,7 +170,7 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
               class="participant-row participant-row--link"
             >
               <v-avatar size="32">
-                <v-img :src="avatarUrl(p)" />
+                <v-img :src="avatarUrl(p)" :alt="`Photo de ${p.firstName} ${p.lastName}`" />
               </v-avatar>
               <div class="participant-info">
                 <span class="participant-name">{{ p.firstName }} {{ p.lastName }}</span>
@@ -195,7 +195,7 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
       <div class="detail-author">
         <router-link :to="`/joueurs/${proposal.author?.publicId}`" class="detail-author-link">
           <v-avatar size="40">
-            <v-img :src="avatarUrl(proposal.author)" />
+            <v-img :src="avatarUrl(proposal.author)" :alt="`Photo de ${proposal.author?.firstName} ${proposal.author?.lastName}`" />
           </v-avatar>
           <div class="detail-author-info">
             <p class="detail-author-role">Organisateur</p>
