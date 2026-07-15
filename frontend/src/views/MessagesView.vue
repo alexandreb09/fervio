@@ -1,15 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '@/api'
+import { avatarUrl } from '@/utils/avatar'
 
 const conversations = ref([])
 const loading = ref(true)
 
-function avatarUrl(u) {
-  if (!u) return ''
-  if (u.avatar) return u.avatar.startsWith('http') ? u.avatar : `http://localhost:8000${u.avatar}`
-  return `https://ui-avatars.com/api/?name=${u.firstName}+${u.lastName}&background=FEF0E6&color=C25228&bold=true&size=80`
-}
 
 function timeAgo(d) {
   const diff = Date.now() - new Date(d).getTime()

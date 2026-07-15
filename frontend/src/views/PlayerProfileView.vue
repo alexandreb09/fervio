@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api'
+import { avatarUrl } from '@/utils/avatar'
 import PartnerBtn from '@/components/PartnerBtn.vue'
 import ReportModal from '@/components/ReportModal.vue'
 
@@ -107,11 +108,6 @@ async function sendPrivateProposal() {
   }
 }
 
-function avatarUrl(u) {
-  if (!u) return ''
-  if (u.avatar) return u.avatar.startsWith('http') ? u.avatar : `http://localhost:8000${u.avatar}`
-  return `https://ui-avatars.com/api/?name=${u.firstName}+${u.lastName}&background=FEF0E6&color=C25228&bold=true&size=120`
-}
 
 function timeAgo(d) {
   if (!d) return null

@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import api from '@/api'
+import { avatarUrl } from '@/utils/avatar'
 import CityInput from '@/components/CityInput.vue'
 import PartnerBtn from '@/components/PartnerBtn.vue'
 import { usePartnersStore } from '@/stores/partners'
@@ -77,11 +78,7 @@ async function deleteAccount() {
 }
 const statusClass = { open: 'badge badge-green', full: 'badge badge-amber', cancelled: 'badge badge-red' }
 
-function playerAvatar(p) {
-  return p.avatar
-    ? (p.avatar.startsWith('http') ? p.avatar : `http://localhost:8000${p.avatar}`)
-    : `https://ui-avatars.com/api/?name=${p.firstName}+${p.lastName}&background=FEF0E6&color=C25228&bold=true&size=80`
-}
+function playerAvatar(p) { return avatarUrl(p) }
 
 function initForms() {
   if (!user.value) return
@@ -218,11 +215,7 @@ async function handleAvatarChange(event) {
   }
 }
 
-function avatarUrl(u) {
-  return u?.avatar
-    ? (u.avatar.startsWith('http') ? u.avatar : `http://localhost:8000${u.avatar}`)
-    : `https://ui-avatars.com/api/?name=${u?.firstName}+${u?.lastName}&background=FEF0E6&color=C25228&bold=true&size=120`
-}
+function myAvatarUrl(u) { return avatarUrl(u, 120) }
 
 function formatDate(d) {
   if (!d) return '—'
@@ -245,7 +238,7 @@ function surfaceLabel(v) {
           <div class="avatar-wrap" :title="uploadingAvatar ? 'Chargement…' : 'Changer la photo'"
             @click="avatarInput?.click()">
             <v-avatar size="64" class="avatar-ring">
-              <v-img :src="avatarUrl(user)" :alt="`Photo de ${user?.firstName} ${user?.lastName}`" />
+              <v-img :src="myAvatarUrl(user)" :alt="`Photo de ${user?.firstName} ${user?.lastName}`" />
             </v-avatar>
             <div class="avatar-overlay">
               <v-icon v-if="!uploadingAvatar" size="18" color="white">mdi-camera</v-icon>

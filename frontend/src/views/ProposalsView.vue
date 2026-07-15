@@ -234,6 +234,11 @@ function formatDate(d) {
 .sidebar { width: 220px; flex-shrink: 0; }
 .list-area { flex: 1; min-width: 0; }
 
+@media (max-width: 768px) {
+  .layout-sidebar { flex-direction: column; }
+  .sidebar { width: 100%; }
+}
+
 /* ── Filter panel ── */
 .filter-panel { background: #fff; border: 1px solid var(--c-border); border-radius: 12px; padding: 18px; }
 .filter-panel-header {

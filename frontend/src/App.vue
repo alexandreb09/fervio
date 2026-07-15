@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useMessagesStore } from '@/stores/messages'
 import { usePartnersStore } from '@/stores/partners'
 import { storeToRefs } from 'pinia'
+import { avatarUrl } from '@/utils/avatar'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -96,7 +97,7 @@ watch(isLoggedIn, (val) => {
               <template #activator="{ props }">
                 <button v-bind="props" class="user-menu-btn">
                   <v-avatar size="24" class="user-avatar-bg">
-                    <v-img v-if="user?.avatar" :src="user.avatar" :alt="`Photo de ${user?.firstName} ${user?.lastName}`" />
+                    <v-img v-if="user?.avatar" :src="avatarUrl(user)" :alt="`Photo de ${user?.firstName} ${user?.lastName}`" />
                     <span v-else class="user-initials">{{ user?.firstName?.[0] }}{{ user?.lastName?.[0] }}</span>
                   </v-avatar>
                   <span class="user-name">{{ user?.firstName }}</span>

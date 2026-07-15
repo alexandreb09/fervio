@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import api from '@/api'
+import { STORAGE_BASE } from '@/utils/avatar'
 import CityInput from '@/components/CityInput.vue'
 import SelectInput from '@/components/SelectInput.vue'
 import PartnerBtn from '@/components/PartnerBtn.vue'
@@ -60,7 +61,8 @@ function accent(u) {
 
 function avatarUrl(u) {
   const c = accent(u)
-  return u?.avatar ? u.avatar : `https://ui-avatars.com/api/?name=${u.firstName}+${u.lastName}&background=F5F0EB&color=${c}&bold=true&size=80`
+  if (u?.avatar) return u.avatar.startsWith('http') ? u.avatar : `${STORAGE_BASE}${u.avatar}`
+  return `https://ui-avatars.com/api/?name=${u.firstName}+${u.lastName}&background=F5F0EB&color=${c}&bold=true&size=80`
 }
 
 function genderBadge(g) {
@@ -201,6 +203,11 @@ function genderLabel(g) {
 .layout-sidebar { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
 .sidebar { width: 220px; flex-shrink: 0; }
 .list-area { flex: 1; min-width: 0; }
+
+@media (max-width: 768px) {
+  .layout-sidebar { flex-direction: column; }
+  .sidebar { width: 100%; }
+}
 
 /* ── Filter panel ── */
 .filter-panel { background: #fff; border: 1px solid var(--c-border); border-radius: 12px; padding: 18px; }

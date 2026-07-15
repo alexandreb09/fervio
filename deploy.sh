@@ -14,7 +14,7 @@ echo "==> Running database migrations..."
 php bin/console doctrine:migrations:migrate --no-interaction --env=prod
 
 echo "==> Clearing and warming cache..."
-php bin/console cache:clear --env=prod --no-debug
+rm -rf var/cache/prod
 php bin/console cache:warmup --env=prod --no-debug
 
 echo "==> Deploy complete."

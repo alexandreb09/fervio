@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMessagesStore } from '@/stores/messages'
 import api from '@/api'
+import { avatarUrl } from '@/utils/avatar'
 import PartnerBtn from '@/components/PartnerBtn.vue'
 import ReportModal from '@/components/ReportModal.vue'
 
@@ -21,11 +22,6 @@ const messagesContainer = ref(null)
 const reportMsgId = ref(null)
 let pollInterval = null
 
-function avatarUrl(u) {
-  if (!u) return ''
-  if (u.avatar) return u.avatar.startsWith('http') ? u.avatar : `http://localhost:8000${u.avatar}`
-  return `https://ui-avatars.com/api/?name=${u.firstName}+${u.lastName}&background=FEF0E6&color=C25228&bold=true&size=80`
-}
 
 function formatTime(d) {
   const date = new Date(d)

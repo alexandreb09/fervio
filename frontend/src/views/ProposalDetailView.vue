@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import api from '@/api'
+import { avatarUrl } from '@/utils/avatar'
 import ReportModal from '@/components/ReportModal.vue'
 
 const route = useRoute()
@@ -58,10 +59,6 @@ function formatDate(d) {
   if (!d) return '—'
   const date = new Date(d)
   return date.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) + ' à ' + date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })
-}
-
-function avatarUrl(u) {
-  return u?.avatar ? u.avatar : `https://ui-avatars.com/api/?name=${u?.firstName}+${u?.lastName}&background=FEF0E6&color=C25228&bold=true&size=80`
 }
 
 const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.participantCount / proposal.value.maxPlayers) * 100) : 0)
