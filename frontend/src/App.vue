@@ -97,10 +97,16 @@ watch(isLoggedIn, (val) => {
           </template>
         </div>
 
-        <!-- Mobile burger -->
-        <button class="d-flex d-md-none mobile-burger" @click="drawer = !drawer">
-          <v-icon size="18" color="text-muted">mdi-menu</v-icon>
-        </button>
+        <!-- Mobile: notification bell (logged in only) + burger -->
+        <div class="d-flex d-md-none align-center mobile-actions">
+          <router-link v-if="isLoggedIn" to="/messages" class="btn-bell">
+            <v-icon size="18">mdi-bell-outline</v-icon>
+            <span v-if="unreadCount > 0" class="unread-dot" />
+          </router-link>
+          <button class="mobile-burger" @click="drawer = !drawer">
+            <v-icon size="18" color="text-muted">mdi-menu</v-icon>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -365,9 +371,12 @@ watch(isLoggedIn, (val) => {
 }
 .btn-register:hover { background: var(--c-primary-dk); }
 
-/* ── Mobile burger ── */
-.mobile-burger {
+/* ── Mobile actions (bell + burger) ── */
+.mobile-actions {
   margin-left: auto;
+  gap: 6px;
+}
+.mobile-burger {
   background: transparent;
   border: 1px solid var(--c-border);
   border-radius: 7px;

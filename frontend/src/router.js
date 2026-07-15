@@ -81,6 +81,16 @@ export const routes = [
     },
   },
   {
+    path: '/verifier-email',
+    component: () => import('@/views/VerifyEmailView.vue'),
+    meta: { title: 'Vérifiez vos emails' },
+  },
+  {
+    path: '/confirmer-email',
+    component: () => import('@/views/EmailConfirmedView.vue'),
+    meta: { title: 'Email confirmé' },
+  },
+  {
     path: '/mot-de-passe-oublie',
     component: () => import('@/views/ForgotPasswordView.vue'),
     meta: { title: 'Mot de passe oublié' },

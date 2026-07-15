@@ -109,6 +109,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(options: ['default' => false])]
     private bool $isSuspended = false;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $emailVerificationToken = null;
+
+    #[ORM\Column(options: ['default' => false])]
+    private bool $isEmailVerified = false;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['user:read', 'user:list'])]
     private ?string $description = null;
@@ -270,4 +276,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->lastActivityAt = new \DateTimeImmutable();
     }
+
+    public function getEmailVerificationToken(): ?string { return $this->emailVerificationToken; }
+    public function setEmailVerificationToken(?string $token): static { $this->emailVerificationToken = $token; return $this; }
+
+    public function isEmailVerified(): bool { return $this->isEmailVerified; }
+    public function setIsEmailVerified(bool $verified): static { $this->isEmailVerified = $verified; return $this; }
 }

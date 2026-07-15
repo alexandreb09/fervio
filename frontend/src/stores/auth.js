@@ -13,6 +13,11 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = res.data.token
     localStorage.setItem('jwt_token', token.value)
     await fetchMe()
+    if (!user.value) {
+      token.value = null
+      localStorage.removeItem('jwt_token')
+      throw { response: { data: { error: 'Connexion impossible. Veuillez réessayer.' } } }
+    }
     return user.value
   }
 

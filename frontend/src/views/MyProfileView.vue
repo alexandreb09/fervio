@@ -242,11 +242,8 @@ function surfaceLabel(v) {
       <div class="profile-body">
         <div class="profile-top-row">
           <!-- Avatar upload -->
-          <div
-            class="avatar-wrap"
-            :title="uploadingAvatar ? 'Chargement…' : 'Changer la photo'"
-            @click="avatarInput?.click()"
-          >
+          <div class="avatar-wrap" :title="uploadingAvatar ? 'Chargement…' : 'Changer la photo'"
+            @click="avatarInput?.click()">
             <v-avatar size="64" class="avatar-ring">
               <v-img :src="avatarUrl(user)" />
             </v-avatar>
@@ -280,7 +277,8 @@ function surfaceLabel(v) {
           <p v-else class="profile-description--empty">Aucune description pour l'instant.</p>
 
           <!-- Tennis info in view mode -->
-          <template v-if="user?.handedness || (user?.hasCourt !== null && user?.hasCourt !== undefined) || user?.preferredSurface?.length">
+          <template
+            v-if="user?.handedness || (user?.hasCourt !== null && user?.hasCourt !== undefined) || user?.preferredSurface?.length">
             <div class="form-divider" />
             <p class="section-label">Profil de jeu</p>
             <div class="play-badges">
@@ -308,14 +306,14 @@ function surfaceLabel(v) {
           <div class="form-grid-2">
             <div class="form-field">
               <label class="field-label">Prénom *</label>
-              <input v-model="form.firstName"
-                class="field-input" :class="{ 'field-input--error': fieldErrors.firstName }" />
+              <input v-model="form.firstName" class="field-input"
+                :class="{ 'field-input--error': fieldErrors.firstName }" />
               <p v-if="fieldErrors.firstName" class="field-error">{{ fieldErrors.firstName }}</p>
             </div>
             <div class="form-field">
               <label class="field-label">Nom <span class="label-optional">(optionnel)</span></label>
-              <input v-model="form.lastName"
-                class="field-input" :class="{ 'field-input--error': fieldErrors.lastName }" />
+              <input v-model="form.lastName" class="field-input"
+                :class="{ 'field-input--error': fieldErrors.lastName }" />
               <p v-if="fieldErrors.lastName" class="field-error">{{ fieldErrors.lastName }}</p>
             </div>
           </div>
@@ -372,8 +370,7 @@ function surfaceLabel(v) {
             </div>
             <div class="form-field">
               <label class="field-label">Terrain disponible</label>
-              <select :value="form.hasCourt === null ? '' : form.hasCourt ? 'true' : 'false'"
-                class="field-select"
+              <select :value="form.hasCourt === null ? '' : form.hasCourt ? 'true' : 'false'" class="field-select"
                 @change="e => form.hasCourt = e.target.value === '' ? null : e.target.value === 'true'">
                 <option value="">Non renseigné</option>
                 <option value="true">Oui, j'ai un terrain</option>
@@ -436,31 +433,37 @@ function surfaceLabel(v) {
             <span class="settings-value">{{ user?.email }}</span>
           </div>
           <div class="settings-row">
-            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-lock-outline</v-icon> Mot de passe</span>
+            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-lock-outline</v-icon> Mot de
+              passe</span>
             <span class="settings-value settings-value--muted">••••••••</span>
           </div>
           <div class="form-divider" />
           <div class="settings-row">
-            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-message-outline</v-icon> Recevoir des messages</span>
+            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-message-outline</v-icon> Recevoir des
+              messages</span>
             <span :class="user?.acceptMessages ? 'badge badge-green badge--sm' : 'badge badge-gray badge--sm'">
               {{ user?.acceptMessages ? 'Activé' : 'Désactivé' }}
             </span>
           </div>
           <div class="settings-row">
-            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-bell-outline</v-icon> Email pour chaque message</span>
+            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-bell-outline</v-icon> Email pour
+              chaque message</span>
             <span :class="user?.notifyMessages ? 'badge badge-green badge--sm' : 'badge badge-gray badge--sm'">
               {{ user?.notifyMessages ? 'Activé' : 'Désactivé' }}
             </span>
           </div>
           <div class="settings-row">
-            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-bell-outline</v-icon> Email pour les réponses aux parties</span>
+            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-bell-outline</v-icon> Email pour les
+              réponses aux parties</span>
             <span :class="user?.notifyProposalReplies ? 'badge badge-green badge--sm' : 'badge badge-gray badge--sm'">
               {{ user?.notifyProposalReplies ? 'Activé' : 'Désactivé' }}
             </span>
           </div>
           <div class="settings-row">
-            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-lock-outline</v-icon> Recevoir des parties privées</span>
-            <span :class="user?.acceptPrivateProposals !== false ? 'badge badge-green badge--sm' : 'badge badge-gray badge--sm'">
+            <span class="settings-label"><v-icon size="14" color="text-subtle">mdi-lock-outline</v-icon> Recevoir des
+              parties privées</span>
+            <span
+              :class="user?.acceptPrivateProposals !== false ? 'badge badge-green badge--sm' : 'badge badge-gray badge--sm'">
               {{ user?.acceptPrivateProposals !== false ? 'Activé' : 'Désactivé' }}
             </span>
           </div>
@@ -473,8 +476,8 @@ function surfaceLabel(v) {
           <p class="section-label">Connexion</p>
           <div class="form-field">
             <label class="field-label">Adresse email</label>
-            <input v-model="accountForm.email" type="email"
-              class="field-input" :class="{ 'field-input--error': accountErrors.email }" />
+            <input v-model="accountForm.email" type="email" class="field-input"
+              :class="{ 'field-input--error': accountErrors.email }" />
             <p v-if="accountErrors.email" class="field-error">{{ accountErrors.email }}</p>
             <p v-if="accountForm.email !== user?.email" class="email-warning">
               <v-icon size="12" color="#D97706">mdi-alert-outline</v-icon>
@@ -490,8 +493,8 @@ function surfaceLabel(v) {
             </div>
             <div class="form-field">
               <label class="field-label">Confirmer le mot de passe</label>
-              <input v-model="accountForm.confirmPassword" type="password" placeholder="Confirmer"
-                class="field-input" :class="{ 'field-input--error': accountErrors.confirmPassword }" />
+              <input v-model="accountForm.confirmPassword" type="password" placeholder="Confirmer" class="field-input"
+                :class="{ 'field-input--error': accountErrors.confirmPassword }" />
               <p v-if="accountErrors.confirmPassword" class="field-error">{{ accountErrors.confirmPassword }}</p>
             </div>
           </div>
@@ -504,8 +507,7 @@ function surfaceLabel(v) {
               <div class="toggle-title">Accepter les messages</div>
               <div class="toggle-desc">Permettre aux autres joueurs de vous envoyer des messages</div>
             </div>
-            <button type="button"
-              :class="accountForm.acceptMessages ? 'toggle-btn toggle-on' : 'toggle-btn toggle-off'"
+            <button type="button" :class="accountForm.acceptMessages ? 'toggle-btn toggle-on' : 'toggle-btn toggle-off'"
               @click="accountForm.acceptMessages = !accountForm.acceptMessages">
               <span class="toggle-knob" />
             </button>
@@ -516,8 +518,7 @@ function surfaceLabel(v) {
               <div class="toggle-title">Notification par email — Messages</div>
               <div class="toggle-desc">Recevoir un email à chaque nouveau message reçu</div>
             </div>
-            <button type="button"
-              :class="accountForm.notifyMessages ? 'toggle-btn toggle-on' : 'toggle-btn toggle-off'"
+            <button type="button" :class="accountForm.notifyMessages ? 'toggle-btn toggle-on' : 'toggle-btn toggle-off'"
               @click="accountForm.notifyMessages = !accountForm.notifyMessages">
               <span class="toggle-knob" />
             </button>
@@ -656,7 +657,9 @@ function surfaceLabel(v) {
               <span class="private-from"> — de {{ p.author?.firstName }} {{ p.author?.lastName }}</span>
             </div>
           </div>
-          <span :class="statusClass[p.status] ?? 'badge badge-gray'" class="badge--xs">{{ statusLabels[p.status] ?? p.status }}</span>
+          <span :class="statusClass[p.status] ?? 'badge badge-gray'" class="badge--xs">{{ statusLabels[p.status] ??
+            p.status
+            }}</span>
         </div>
       </div>
 
@@ -671,12 +674,14 @@ function surfaceLabel(v) {
     <div class="danger-zone">
       <div class="danger-zone-header">
         <v-icon size="15" color="error">mdi-alert-circle-outline</v-icon>
-        Zone danger
+        ACTION IRREVERSIBLE
       </div>
       <div class="danger-zone-body">
         <div>
           <div class="danger-zone-label">Supprimer mon compte</div>
-          <div class="danger-zone-hint">Toutes vos données seront définitivement supprimées. Cette action est irréversible.</div>
+          <div class="danger-zone-hint">Toutes vos données seront définitivement supprimées. Cette action est
+            irréversible.
+          </div>
         </div>
         <button class="btn-danger" @click="deleteDialog = true; deleteEmailConfirm = ''">Supprimer</button>
       </div>
@@ -695,16 +700,13 @@ function surfaceLabel(v) {
         </p>
         <div class="dialog-confirm-field">
           <label class="field-label field-label--sm">Confirmez en saisissant votre email</label>
-          <input
-            v-model="deleteEmailConfirm"
-            type="email"
-            :placeholder="user?.email"
-            class="field-input field-input--danger-focus"
-          />
+          <input v-model="deleteEmailConfirm" type="email" :placeholder="user?.email"
+            class="field-input field-input--danger-focus" />
         </div>
         <div v-if="deleteError" class="error-banner">{{ deleteError }}</div>
         <div class="dialog-actions">
-          <button class="btn-secondary" :disabled="deleting" @click="deleteDialog = false; deleteEmailConfirm = ''">Annuler</button>
+          <button class="btn-secondary" :disabled="deleting"
+            @click="deleteDialog = false; deleteEmailConfirm = ''">Annuler</button>
           <button class="btn-danger" :disabled="deleting || deleteEmailConfirm !== user?.email" @click="deleteAccount">
             <v-progress-circular v-if="deleting" size="13" width="2" color="white" indeterminate />
             {{ deleting ? 'Suppression…' : 'Oui, supprimer' }}
@@ -724,8 +726,16 @@ function surfaceLabel(v) {
   overflow: hidden;
   margin-bottom: 20px;
 }
-.profile-banner { height: 80px; background: linear-gradient(135deg, var(--c-primary), #D47A52); }
-.profile-body { padding: 0 24px 24px; }
+
+.profile-banner {
+  height: 80px;
+  background: linear-gradient(135deg, var(--c-primary), #D47A52);
+}
+
+.profile-body {
+  padding: 0 24px 24px;
+}
+
 .profile-top-row {
   display: flex;
   align-items: flex-end;
@@ -737,8 +747,18 @@ function surfaceLabel(v) {
 }
 
 /* ── Avatar upload ── */
-.avatar-wrap { position: relative; cursor: pointer; flex-shrink: 0; }
-.avatar-ring { border: 3px solid #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); display: block; }
+.avatar-wrap {
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.avatar-ring {
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+}
+
 .avatar-overlay {
   position: absolute;
   inset: 0;
@@ -751,12 +771,31 @@ function surfaceLabel(v) {
   opacity: 0;
   transition: opacity 0.15s;
 }
-.avatar-wrap:hover .avatar-overlay { opacity: 1; }
-.avatar-input { display: none; }
+
+.avatar-wrap:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-input {
+  display: none;
+}
 
 /* ── Profile view mode ── */
-.profile-name { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--c-text); margin: 0 0 8px; }
-.profile-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.profile-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--c-text);
+  margin: 0 0 8px;
+}
+
+.profile-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
 .profile-description {
   font-size: 14px;
   color: var(--c-text-muted);
@@ -767,19 +806,69 @@ function surfaceLabel(v) {
   margin: 0 0 16px;
   border: 1px solid var(--c-hover);
 }
-.profile-description--empty { font-size: 13px; color: var(--c-text-sm); font-style: italic; margin: 0 0 16px; }
-.play-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.profile-description--empty {
+  font-size: 13px;
+  color: var(--c-text-sm);
+  font-style: italic;
+  margin: 0 0 16px;
+}
+
+.play-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 
 /* ── Form helpers ── */
-.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-.form-field { margin-bottom: 12px; }
-.form-field--mb { margin-bottom: 16px; }
-.label-optional { font-weight: 400; color: var(--c-text-sm); font-size: 12px; }
-.field-textarea { resize: vertical; background: #fff; }
-.surface-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-.form-actions { display: flex; gap: 8px; }
-.btn-with-icon { display: flex; align-items: center; gap: 6px; }
-.btn-sm { font-size: 12px; padding: 5px 12px; }
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-field {
+  margin-bottom: 12px;
+}
+
+.form-field--mb {
+  margin-bottom: 16px;
+}
+
+.label-optional {
+  font-weight: 400;
+  color: var(--c-text-sm);
+  font-size: 12px;
+}
+
+.field-textarea {
+  resize: vertical;
+  background: #fff;
+}
+
+.surface-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-sm {
+  font-size: 12px;
+  padding: 5px 12px;
+}
 
 /* ── Account settings card ── */
 .settings-card {
@@ -789,6 +878,7 @@ function surfaceLabel(v) {
   margin-bottom: 20px;
   overflow: hidden;
 }
+
 .settings-card-header {
   padding: 18px 24px;
   border-bottom: 1px solid var(--c-hover);
@@ -796,7 +886,13 @@ function surfaceLabel(v) {
   align-items: center;
   justify-content: space-between;
 }
-.settings-card-title-row { display: flex; align-items: center; gap: 10px; }
+
+.settings-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .settings-icon {
   width: 32px;
   height: 32px;
@@ -806,8 +902,17 @@ function surfaceLabel(v) {
   align-items: center;
   justify-content: center;
 }
-.settings-card-title { font-size: 15px; font-weight: 700; color: var(--c-text); margin: 0; }
-.settings-card-body { padding: 20px 24px; }
+
+.settings-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-text);
+  margin: 0;
+}
+
+.settings-card-body {
+  padding: 20px 24px;
+}
 
 /* Account view */
 .settings-row {
@@ -818,12 +923,33 @@ function surfaceLabel(v) {
   border-bottom: 1px solid var(--c-bg);
   gap: 12px;
 }
-.settings-label { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--c-text-dk); font-weight: 500; }
-.settings-value { font-size: 13px; color: var(--c-text); font-weight: 500; }
-.settings-value--muted { color: var(--c-text-sm); }
+
+.settings-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  color: var(--c-text-dk);
+  font-weight: 500;
+}
+
+.settings-value {
+  font-size: 13px;
+  color: var(--c-text);
+  font-weight: 500;
+}
+
+.settings-value--muted {
+  color: var(--c-text-sm);
+}
 
 /* Account form */
-.email-warning { font-size: 11px; color: #D97706; margin: 4px 0 0; font-weight: 500; }
+.email-warning {
+  font-size: 11px;
+  color: #D97706;
+  margin: 4px 0 0;
+  font-weight: 500;
+}
 
 /* Toggle switch */
 .toggle-row {
@@ -834,9 +960,23 @@ function surfaceLabel(v) {
   padding: 10px 0;
   border-bottom: 1px solid var(--c-bg);
 }
-.toggle-row--last { margin-bottom: 20px; }
-.toggle-title { font-size: 13px; font-weight: 600; color: var(--c-text); margin-bottom: 2px; }
-.toggle-desc { font-size: 12px; color: var(--c-text-sm); }
+
+.toggle-row--last {
+  margin-bottom: 20px;
+}
+
+.toggle-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text);
+  margin-bottom: 2px;
+}
+
+.toggle-desc {
+  font-size: 12px;
+  color: var(--c-text-sm);
+}
+
 .toggle-btn {
   width: 40px;
   height: 22px;
@@ -849,9 +989,25 @@ function surfaceLabel(v) {
   align-items: center;
   transition: background 0.2s;
 }
-.toggle-on { background: var(--c-primary); justify-content: flex-end; }
-.toggle-off { background: var(--c-border-lt); justify-content: flex-start; }
-.toggle-knob { display: block; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); }
+
+.toggle-on {
+  background: var(--c-primary);
+  justify-content: flex-end;
+}
+
+.toggle-off {
+  background: var(--c-border-lt);
+  justify-content: flex-start;
+}
+
+.toggle-knob {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
 
 /* Surface pills */
 .surface-pill {
@@ -866,29 +1022,78 @@ function surfaceLabel(v) {
   cursor: pointer;
   transition: all 0.15s;
 }
-.surface-pill:hover { border-color: var(--c-primary); color: var(--c-primary-dk); }
-.surface-pill--on { background: var(--c-primary-bg); border-color: var(--c-primary); color: var(--c-primary-dk); }
+
+.surface-pill:hover {
+  border-color: var(--c-primary);
+  color: var(--c-primary-dk);
+}
+
+.surface-pill--on {
+  background: var(--c-primary-bg);
+  border-color: var(--c-primary);
+  color: var(--c-primary-dk);
+}
 
 /* ── Section blocks ── */
-.section-block { margin-bottom: 24px; }
-.section-block-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.section-block-title { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: var(--c-text); margin: 0; }
-.section-block-count { font-size: 13px; color: var(--c-text-sm); font-weight: 500; }
+.section-block {
+  margin-bottom: 24px;
+}
+
+.section-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-block-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--c-text);
+  margin: 0;
+}
+
+.section-block-count {
+  font-size: 13px;
+  color: var(--c-text-sm);
+  font-weight: 500;
+}
 
 /* Partner header actions */
-.partners-header-actions { display: flex; align-items: center; gap: 10px; }
+.partners-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .find-players-link {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: var(--c-primary-bg); border: 1px solid var(--c-border);
-  border-radius: 8px; padding: 5px 11px;
-  font-size: 12px; font-weight: 600; color: var(--c-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--c-primary-bg);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-primary);
   text-decoration: none;
   transition: background 0.15s, border-color 0.15s;
 }
-.find-players-link:hover { background: var(--c-hover); border-color: var(--c-primary); }
+
+.find-players-link:hover {
+  background: var(--c-hover);
+  border-color: var(--c-primary);
+}
 
 /* Partners */
-.partners-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.partners-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
 .partner-card {
   text-decoration: none;
   background: #fff;
@@ -903,17 +1108,59 @@ function surfaceLabel(v) {
   position: relative;
   transition: border-color 0.15s;
 }
-.partner-card:hover { border-color: var(--c-border-lt); }
-.partner-card-btn { position: absolute; top: 8px; right: 8px; padding: 3px 5px; }
-.partner-card-name { font-size: 13px; font-weight: 700; color: var(--c-text); }
-.partner-card-city { font-size: 12px; color: var(--c-text-sm); margin-top: 2px; }
+
+.partner-card:hover {
+  border-color: var(--c-border-lt);
+}
+
+.partner-card-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 5px;
+}
+
+.partner-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.partner-card-city {
+  font-size: 12px;
+  color: var(--c-text-sm);
+  margin-top: 2px;
+}
 
 /* Proposals list */
-.skeleton-list { display: flex; flex-direction: column; gap: 8px; }
-.proposals-list { display: flex; flex-direction: column; gap: 8px; }
-.proposal-row { padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
-.proposal-info { flex: 1; min-width: 0; }
-.proposal-link { text-decoration: none; }
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proposals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proposal-row {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.proposal-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.proposal-link {
+  text-decoration: none;
+}
+
 .proposal-title {
   font-size: 14px;
   font-weight: 700;
@@ -923,8 +1170,16 @@ function surfaceLabel(v) {
   text-overflow: ellipsis;
   margin-bottom: 3px;
 }
-.proposal-meta { font-size: 12px; color: var(--c-text-sm); }
-.private-from { color: var(--c-primary); font-weight: 500; }
+
+.proposal-meta {
+  font-size: 12px;
+  color: var(--c-text-sm);
+}
+
+.private-from {
+  color: var(--c-primary);
+  font-weight: 500;
+}
 
 /* ── Danger zone ── */
 .danger-zone {
@@ -934,6 +1189,7 @@ function surfaceLabel(v) {
   overflow: hidden;
   margin-top: 8px;
 }
+
 .danger-zone-header {
   display: flex;
   align-items: center;
@@ -947,6 +1203,7 @@ function surfaceLabel(v) {
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
+
 .danger-zone-body {
   padding: 16px 18px;
   display: flex;
@@ -954,8 +1211,18 @@ function surfaceLabel(v) {
   justify-content: space-between;
   gap: 16px;
 }
-.danger-zone-label { font-size: 14px; font-weight: 600; color: var(--c-text); margin-bottom: 2px; }
-.danger-zone-hint { font-size: 12px; color: var(--c-text-sm); }
+
+.danger-zone-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-text);
+  margin-bottom: 2px;
+}
+
+.danger-zone-hint {
+  font-size: 12px;
+  color: var(--c-text-sm);
+}
 
 .btn-danger {
   flex-shrink: 0;
@@ -973,8 +1240,15 @@ function surfaceLabel(v) {
   cursor: pointer;
   transition: background 0.15s;
 }
-.btn-danger:hover:not(:disabled) { background: #DC2626; }
-.btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-danger:hover:not(:disabled) {
+  background: #DC2626;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* ── Confirmation dialog ── */
 .dialog-backdrop {
@@ -987,6 +1261,7 @@ function surfaceLabel(v) {
   z-index: 200;
   padding: 16px;
 }
+
 .dialog-box {
   background: #fff;
   border-radius: 16px;
@@ -996,6 +1271,7 @@ function surfaceLabel(v) {
   text-align: center;
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.15);
 }
+
 .dialog-icon {
   width: 48px;
   height: 48px;
@@ -1007,9 +1283,27 @@ function surfaceLabel(v) {
   justify-content: center;
   margin: 0 auto 16px;
 }
-.dialog-title { font-size: 17px; font-weight: 800; color: var(--c-text); margin: 0 0 10px; letter-spacing: -0.02em; }
-.dialog-text { font-size: 14px; color: var(--c-text-muted); line-height: 1.6; margin: 0 0 20px; }
-.dialog-actions { display: flex; gap: 10px; justify-content: center; }
+
+.dialog-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--c-text);
+  margin: 0 0 10px;
+  letter-spacing: -0.02em;
+}
+
+.dialog-text {
+  font-size: 14px;
+  color: var(--c-text-muted);
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
 
 .btn-delete {
   flex-shrink: 0;
@@ -1024,7 +1318,10 @@ function surfaceLabel(v) {
   cursor: pointer;
   transition: background 0.1s;
 }
-.btn-delete:hover { background: #FEE2E2; }
+
+.btn-delete:hover {
+  background: #FEE2E2;
+}
 
 .btn-propose-sm {
   text-decoration: none;
@@ -1041,9 +1338,25 @@ function surfaceLabel(v) {
 }
 
 /* Empty states */
-.empty-state { text-align: center; padding: 32px; border: 1px dashed var(--c-border); border-radius: 12px; }
-.empty-state-text { color: var(--c-text-sm); font-size: 13px; margin: 6px 0 0; }
-.empty-state-hint { color: var(--c-border-lt); font-size: 12px; margin: 4px 0 0; }
+.empty-state {
+  text-align: center;
+  padding: 32px;
+  border: 1px dashed var(--c-border);
+  border-radius: 12px;
+}
+
+.empty-state-text {
+  color: var(--c-text-sm);
+  font-size: 13px;
+  margin: 6px 0 0;
+}
+
+.empty-state-hint {
+  color: var(--c-border-lt);
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
 .empty-state-cta {
   text-decoration: none;
   font-size: 13px;
@@ -1060,7 +1373,13 @@ function surfaceLabel(v) {
   margin-top: 16px;
   cursor: pointer;
 }
+
 /* ── Dialog confirm field ── */
-.dialog-confirm-field { margin-bottom: 16px; }
-.field-input--danger-focus:focus { border-color: var(--c-error) !important; }
+.dialog-confirm-field {
+  margin-bottom: 16px;
+}
+
+.field-input--danger-focus:focus {
+  border-color: var(--c-error) !important;
+}
 </style>

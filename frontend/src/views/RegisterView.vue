@@ -27,7 +27,7 @@ async function submit() {
   loading.value = true
   try {
     await auth.register(form.value)
-    router.push('/profil')
+    router.push('/verifier-email')
   } catch (e) {
     if (e.response?.status === 422) fieldErrors.value = e.response.data.errors || {}
     else error.value = e.response?.data?.error || 'Une erreur est survenue.'

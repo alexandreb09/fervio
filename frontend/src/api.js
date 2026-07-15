@@ -14,12 +14,12 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    const isLoginEndpoint = err.config?.url?.includes('/auth/login')
+    const isAuthEndpoint = err.config?.url?.includes('/auth/')
     const hadToken = !!localStorage.getItem('jwt_token')
-    // Only redirect to login if the user WAS authenticated (expired token), not for anonymous requests
-    if (err.response?.status === 401 && !isLoginEndpoint && hadToken) {
+    // Clear stale token on 401, but let the Vue Router guard handle the redirect
+    // (using window.location.href here would abort in-flight login flows)
+    if (err.response?.status === 401 && !isAuthEndpoint && hadToken) {
       localStorage.removeItem('jwt_token')
-      window.location.href = '/connexion'
     }
     return Promise.reject(err)
   }
