@@ -221,8 +221,9 @@ function updateJsonLd(data) {
 }
 
 export function setupRouterGuards(router) {
-  router.beforeEach((to) => {
+  router.beforeEach(async (to) => {
     const auth = useAuthStore()
+    await auth.ready
     if (to.meta.requiresAuth && !auth.isLoggedIn) {
       return { path: '/connexion', query: { redirect: to.fullPath } }
     }

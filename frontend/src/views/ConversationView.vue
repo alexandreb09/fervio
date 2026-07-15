@@ -15,6 +15,7 @@ const partner = ref(null)
 const messages = ref([])
 const newMessage = ref('')
 const loading = ref(true)
+const loadError = ref(false)
 const sending = ref(false)
 const messagesContainer = ref(null)
 const reportMsgId = ref(null)
@@ -66,10 +67,17 @@ async function scrollToBottom() {
 }
 
 onMounted(async () => {
-  const [partnerRes] = await Promise.all([api.get(`/users/${route.params.id}`), fetchMessages()])
-  partner.value = partnerRes.data
-  loading.value = false
-  pollInterval = setInterval(fetchMessages, 10000)
+  try {
+    const [partnerRes] = await Promise.all([api.get(`/users/${route.params.id}`), fetchMessages()])
+    partner.value = partnerRes.data
+  } catch {
+    loadError.value = true
+  } finally {
+    loading.value = false
+  }
+  pollInterval = setInterval(async () => {
+    try { await fetchMessages() } catch {}
+  }, 10000)
 })
 
 onUnmounted(() => clearInterval(pollInterval))
@@ -79,6 +87,11 @@ onUnmounted(() => clearInterval(pollInterval))
   <div class="conv-layout">
     <div v-if="loading" class="loading-center">
       <v-progress-circular size="32" color="primary" indeterminate />
+    </div>
+
+    <div v-else-if="loadError" class="loading-center">
+      <p class="conv-load-error">Impossible de charger la conversation. Veuillez réessayer.</p>
+      <router-link to="/messages" class="conv-back-link">← Retour aux messages</router-link>
     </div>
 
     <template v-else>
@@ -170,7 +183,10 @@ onUnmounted(() => clearInterval(pollInterval))
   flex-direction: column;
   height: calc(100vh - 60px);
 }
-.loading-center { display: flex; justify-content: center; padding: 80px; }
+.loading-center { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px; gap: 12px; }
+.conv-load-error { font-size: 14px; color: var(--c-text-md); text-align: center; }
+.conv-back-link { font-size: 13px; color: var(--c-primary); text-decoration: none; font-weight: 500; }
+.conv-back-link:hover { text-decoration: underline; }
 
 /* ── Header ── */
 .conv-header {

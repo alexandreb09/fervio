@@ -42,7 +42,8 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('jwt_token')
   }
 
-  if (token.value) fetchMe()
+  // Exposed so the router guard can await initial auth resolution before redirecting
+  const ready = token.value ? fetchMe() : Promise.resolve()
 
-  return { user, token, isLoggedIn, login, register, fetchMe, logout }
+  return { user, token, isLoggedIn, login, register, fetchMe, logout, ready }
 })
