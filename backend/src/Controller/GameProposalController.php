@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\GameProposal;
+use App\Entity\Notification;
 use App\Entity\User;
 use App\Repository\GameProposalRepository;
 use App\Repository\UserRepository;
@@ -201,6 +202,13 @@ class GameProposalController extends AbstractController
         if ($proposal->isFull()) {
             $proposal->setStatus('full');
         }
+
+        $em->persist(new Notification($proposal->getAuthor(), 'proposal_join', [
+            'joinerFirstName'  => $user->getFirstName(),
+            'joinerLastName'   => $user->getLastName() ?? '',
+            'proposalTitle'    => $proposal->getTitle(),
+            'proposalPublicId' => $proposal->getPublicId(),
+        ]));
 
         $em->flush();
 

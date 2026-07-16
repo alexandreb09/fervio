@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useMessagesStore } from '@/stores/messages'
+import { useNotificationsStore } from '@/stores/notifications'
 import { usePartnersStore } from '@/stores/partners'
 import { storeToRefs } from 'pinia'
 import { avatarUrl } from '@/utils/avatar'
@@ -10,28 +11,56 @@ import { avatarUrl } from '@/utils/avatar'
 const router = useRouter()
 const auth = useAuthStore()
 const messages = useMessagesStore()
+const notifications = useNotificationsStore()
 const partners = usePartnersStore()
 const { isLoggedIn, user } = storeToRefs(auth)
 const { unreadCount } = storeToRefs(messages)
 const drawer = ref(false)
+const bellOpen = ref(false)
+const mobileBellOpen = ref(false)
 const newMsgSnackbar = ref(false)
 const prevUnread = ref(-1)
 
-function logout() { auth.logout(); partners.reset(); router.push('/') }
+const notifCount = computed(() => notifications.items.length)
 
-onMounted(() => { if (isLoggedIn.value) messages.fetchUnread() })
+function timeAgo(dateStr) {
+  const mins = Math.floor((Date.now() - new Date(dateStr)) / 60000)
+  if (mins < 1) return 'à l\'instant'
+  if (mins < 60) return `${mins} min`
+  const h = Math.floor(mins / 60)
+  if (h < 24) return `${h}h`
+  return `${Math.floor(h / 24)}j`
+}
+
+function logout() { auth.logout(); partners.reset(); notifications.reset(); router.push('/') }
+
+onMounted(() => {
+  if (isLoggedIn.value) { messages.fetchUnread(); notifications.fetch() }
+})
 
 watch(unreadCount, (newVal) => {
   if (prevUnread.value >= 0 && newVal > prevUnread.value) newMsgSnackbar.value = true
   prevUnread.value = newVal
 })
 
+function onBellChange(open) {
+  if (open) notifications.fetch()
+  else notifications.readAll()
+}
+watch(bellOpen, onBellChange)
+watch(mobileBellOpen, onBellChange)
+
 watch(isLoggedIn, (val) => {
   if (val) {
     messages.fetchUnread()
-    const t = setInterval(() => { if (isLoggedIn.value) messages.fetchUnread(); else clearInterval(t) }, 15000)
+    notifications.fetch()
+    const t = setInterval(() => {
+      if (isLoggedIn.value) { messages.fetchUnread(); notifications.fetch() }
+      else clearInterval(t)
+    }, 15000)
   } else {
     prevUnread.value = -1
+    notifications.reset()
   }
 })
 </script>
@@ -67,28 +96,44 @@ watch(isLoggedIn, (val) => {
           </router-link>
 
           <template v-if="isLoggedIn">
-            <!-- Bell with notification dropdown -->
-            <v-menu transition="slide-y-transition" :offset="[4, 0]">
+            <!-- Messages shortcut -->
+            <router-link to="/messages" class="btn-bell" aria-label="Messages">
+              <v-icon size="18">mdi-message-outline</v-icon>
+              <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+            </router-link>
+
+            <!-- Bell — notifications (proposal joins etc.) -->
+            <v-menu v-model="bellOpen" transition="slide-y-transition" :offset="[4, 0]">
               <template #activator="{ props }">
                 <button v-bind="props" class="btn-bell" aria-label="Notifications">
                   <v-icon size="18">mdi-bell-outline</v-icon>
-                  <span v-if="unreadCount > 0" class="unread-dot" />
+                  <span v-if="notifCount > 0" class="notif-badge">{{ notifCount > 9 ? '9+' : notifCount }}</span>
                 </button>
               </template>
               <div class="notif-dropdown">
                 <div class="notif-header">Notifications</div>
-                <div v-if="unreadCount === 0" class="notif-empty">
+                <div v-if="notifCount === 0" class="notif-empty">
                   <v-icon size="24" color="border-light">mdi-bell-off-outline</v-icon>
-                  <span>Aucune notification</span>
+                  <span>Aucune nouvelle notification</span>
                 </div>
-                <router-link v-else to="/messages" class="notif-item">
-                  <v-icon size="15" color="primary">mdi-message-outline</v-icon>
-                  <span>{{ unreadCount }} message{{ unreadCount > 1 ? 's' : '' }} non lu{{ unreadCount > 1 ? 's' : '' }}</span>
-                  <span class="badge badge-red badge--xs ml-auto">{{ unreadCount }}</span>
-                </router-link>
-                <div class="notif-footer">
-                  <router-link to="/messages" class="notif-all-link">Voir tous les messages →</router-link>
-                </div>
+                <template v-else>
+                  <router-link
+                    v-for="n in notifications.items"
+                    :key="n.id"
+                    :to="`/annonces/${n.data.proposalPublicId}`"
+                    class="notif-item"
+                    @click="bellOpen = false"
+                  >
+                    <v-icon size="15" color="primary">mdi-tennis</v-icon>
+                    <div class="notif-item-body">
+                      <span class="notif-item-text">
+                        <strong>{{ n.data.joinerFirstName }}</strong> a rejoint
+                        <em>{{ n.data.proposalTitle }}</em>
+                      </span>
+                      <span class="notif-item-time">{{ timeAgo(n.createdAt) }}</span>
+                    </div>
+                  </router-link>
+                </template>
               </div>
             </v-menu>
 
@@ -127,12 +172,49 @@ watch(isLoggedIn, (val) => {
           </template>
         </div>
 
-        <!-- Mobile: notification bell (logged in only) + burger -->
+        <!-- Mobile: icons + burger -->
         <div class="d-flex d-md-none align-center mobile-actions">
-          <router-link v-if="isLoggedIn" to="/messages" class="btn-bell">
-            <v-icon size="18">mdi-bell-outline</v-icon>
-            <span v-if="unreadCount > 0" class="unread-dot" />
-          </router-link>
+          <template v-if="isLoggedIn">
+            <router-link to="/messages" class="btn-bell" aria-label="Messages">
+              <v-icon size="18">mdi-message-outline</v-icon>
+              <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+            </router-link>
+
+            <v-menu v-model="mobileBellOpen" transition="slide-y-transition" :offset="[4, 0]">
+              <template #activator="{ props }">
+                <button v-bind="props" class="btn-bell" aria-label="Notifications">
+                  <v-icon size="18">mdi-bell-outline</v-icon>
+                  <span v-if="notifCount > 0" class="notif-badge">{{ notifCount > 9 ? '9+' : notifCount }}</span>
+                </button>
+              </template>
+              <div class="notif-dropdown">
+                <div class="notif-header">Notifications</div>
+                <div v-if="notifCount === 0" class="notif-empty">
+                  <v-icon size="24" color="border-light">mdi-bell-off-outline</v-icon>
+                  <span>Aucune nouvelle notification</span>
+                </div>
+                <template v-else>
+                  <router-link
+                    v-for="n in notifications.items"
+                    :key="n.id"
+                    :to="`/annonces/${n.data.proposalPublicId}`"
+                    class="notif-item"
+                    @click="mobileBellOpen = false"
+                  >
+                    <v-icon size="15" color="primary">mdi-tennis</v-icon>
+                    <div class="notif-item-body">
+                      <span class="notif-item-text">
+                        <strong>{{ n.data.joinerFirstName }}</strong> a rejoint
+                        <em>{{ n.data.proposalTitle }}</em>
+                      </span>
+                      <span class="notif-item-time">{{ timeAgo(n.createdAt) }}</span>
+                    </div>
+                  </router-link>
+                </template>
+              </div>
+            </v-menu>
+          </template>
+
           <button class="mobile-burger" @click="drawer = !drawer">
             <v-icon size="18" color="text-muted">mdi-menu</v-icon>
           </button>
@@ -328,15 +410,25 @@ watch(isLoggedIn, (val) => {
 }
 .btn-bell:hover { background: var(--c-bg); }
 
-.unread-dot {
+.notif-badge {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  top: -3px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 99px;
   background: var(--c-error);
-  border: 1.5px solid #fff;
+  border: 2px solid #fff;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  font-family: Inter, sans-serif;
+  line-height: 1;
+  pointer-events: none;
 }
 
 /* ── Notification dropdown ── */
@@ -367,29 +459,31 @@ watch(isLoggedIn, (val) => {
 }
 .notif-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 8px 10px;
   border-radius: 7px;
   text-decoration: none;
   color: var(--c-text-dk);
   font-size: 13px;
-  font-weight: 500;
   transition: background 0.1s;
 }
 .notif-item:hover { background: var(--c-bg); }
-.notif-footer {
-  border-top: 1px solid var(--c-hover);
-  padding: 6px 8px 2px;
-  margin-top: 4px;
+.notif-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
-.notif-all-link {
-  font-size: 12px;
-  color: var(--c-primary);
-  text-decoration: none;
-  font-weight: 500;
+.notif-item-text {
+  font-size: 13px;
+  color: var(--c-text);
+  line-height: 1.4;
 }
-.notif-all-link:hover { text-decoration: underline; }
+.notif-item-time {
+  font-size: 11px;
+  color: var(--c-text-sm);
+}
 
 /* ── User menu ── */
 .user-menu-btn {

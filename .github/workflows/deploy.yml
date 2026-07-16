@@ -35,6 +35,9 @@ jobs:
         run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       # ── Backend deploy (git pull + composer + migrations) ─────
+      - name: Sync deploy script
+        run: scp deploy.sh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/homez.2212/teensgg/alex/deploy.sh
+
       - name: Deploy backend
         run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "bash /homez.2212/teensgg/alex/deploy.sh"
 
