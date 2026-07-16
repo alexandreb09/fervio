@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api'
+import CityInput from '@/components/CityInput.vue'
 
 const router = useRouter()
 const loading = ref(false)
@@ -24,6 +25,7 @@ const form = ref({
   title: '',
   description: '',
   city: '',
+  postalCode: null,
   address: '',
   scheduledAt: '',
   duration: null,
@@ -114,13 +116,16 @@ async function submit() {
 
         <v-row>
           <v-col cols="12" sm="6">
-            <v-text-field
-              v-model="form.city"
-              label="Ville *"
-              prepend-inner-icon="mdi-map-marker-outline"
-              :error-messages="errors.city"
-              hide-details="auto"
-            />
+            <div class="form-field-city">
+              <label class="field-label">Ville *</label>
+              <CityInput
+                v-model="form.city"
+                placeholder="Paris"
+                input-class="field-input"
+                @city-selected="e => { form.city = e.name; form.postalCode = e.postalCode }"
+              />
+              <p v-if="errors.city" class="field-error">{{ errors.city }}</p>
+            </div>
           </v-col>
           <v-col cols="12" sm="6">
             <v-text-field
@@ -338,6 +343,11 @@ async function submit() {
 .game-type-btn-label { font-size: 13px; font-weight: 700; color: var(--c-text-dk); }
 .game-type-btn-label--active { color: var(--c-primary); }
 .game-type-btn-desc { font-size: 11px; color: var(--c-text-sm); }
+
+/* City field wrapper (replaces v-text-field for CityInput) */
+.form-field-city { margin-bottom: 0; }
+.form-field-city .field-label { display: block; margin-bottom: 4px; }
+.form-field-city .field-input { width: 100%; }
 
 /* Actions */
 .form-actions { display: flex; gap: 12px; align-items: center; }

@@ -28,7 +28,8 @@ class GameProposalController extends AbstractController
             $request->query->get('surface'),
             $request->query->get('gameType'),
             $request->query->get('status', 'open'),
-            $request->query->getInt('authorId') ?: null
+            $request->query->getInt('authorId') ?: null,
+            $request->query->get('department')
         );
 
         return $this->json($normalizer->normalize($proposals, null, ['groups' => ['proposal:list']]));
@@ -259,6 +260,7 @@ class GameProposalController extends AbstractController
         if (isset($data['title'])) $proposal->setTitle($data['title']);
         if (array_key_exists('description', $data)) $proposal->setDescription($data['description'] ?: null);
         if (isset($data['city'])) $proposal->setCity($data['city']);
+        if (array_key_exists('postalCode', $data)) $proposal->setPostalCode(!empty($data['postalCode']) ? $data['postalCode'] : null);
         if (array_key_exists('address', $data)) $proposal->setAddress($data['address'] ?: null);
         if (array_key_exists('surface', $data)) $proposal->setSurface($data['surface'] ?: null);
         if (array_key_exists('gameType', $data)) $proposal->setGameType($data['gameType'] ?: null);

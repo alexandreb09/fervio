@@ -24,7 +24,8 @@ class UserController extends AbstractController
             $request->query->get('city'),
             $request->query->get('minRanking'),
             $request->query->get('maxRanking'),
-            $request->query->get('gender')
+            $request->query->get('gender'),
+            $request->query->get('department')
         );
 
         return $this->json($normalizer->normalize($users, null, ['groups' => ['user:list']]));
@@ -171,6 +172,7 @@ class UserController extends AbstractController
         if (array_key_exists('lastName', $data))               $user->setLastName(!empty($data['lastName']) ? $data['lastName'] : null);
         if (!empty($data['email']))                            $user->setEmail($data['email']);
         if (array_key_exists('city', $data))                   $user->setCity($data['city']);
+        if (array_key_exists('postalCode', $data))             $user->setPostalCode(!empty($data['postalCode']) ? $data['postalCode'] : null);
         if (array_key_exists('fftRanking', $data))             $user->setFftRanking($data['fftRanking'] ?: null);
         if (array_key_exists('gender', $data))                 $user->setGender($data['gender']);
         if (array_key_exists('description', $data))            $user->setDescription($data['description']);

@@ -56,6 +56,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:list', 'proposal:read'])]
     private ?string $city = null;
 
+    #[ORM\Column(length: 10, nullable: true)]
+    #[Groups(['user:read', 'user:list', 'proposal:read'])]
+    private ?string $postalCode = null;
+
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 7, nullable: true)]
     #[Groups(['user:read'])]
     private ?string $latitude = null;
@@ -189,6 +193,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getCity(): ?string { return $this->city; }
     public function setCity(?string $city): static { $this->city = $city; return $this; }
+    public function getPostalCode(): ?string { return $this->postalCode; }
+    public function setPostalCode(?string $postalCode): static { $this->postalCode = $postalCode; return $this; }
 
     public function getLatitude(): ?string { return $this->latitude; }
     public function setLatitude(?string $latitude): static { $this->latitude = $latitude; return $this; }

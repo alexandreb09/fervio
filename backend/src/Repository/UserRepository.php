@@ -32,12 +32,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         '4/6', '3/6', '2/6', '1/6', '0', '-2/6', '-4/6', '-15', '-30',
     ];
 
-    public function findByFilters(?string $city, ?string $minRanking, ?string $maxRanking, ?string $gender): array
+    public function findByFilters(?string $city, ?string $minRanking, ?string $maxRanking, ?string $gender, ?string $department = null): array
     {
         $qb = $this->createQueryBuilder('u');
 
         if ($city) {
             $qb->andWhere('u.city LIKE :city')->setParameter('city', '%' . $city . '%');
+        }
+        if ($department) {
+            $qb->andWhere('u.postalCode LIKE :dept')->setParameter('dept', $department . '%');
         }
         if ($minRanking || $maxRanking) {
             $minIdx = $minRanking ? (int) array_search($minRanking, self::FFT_RANKINGS) : 0;

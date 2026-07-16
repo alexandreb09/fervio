@@ -1,47 +1,95 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import api from '@/api'
+import { ref, watch, onUnmounted } from 'vue'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
   placeholder: { type: String, default: 'Paris…' },
   inputClass: { type: String, default: '' },
 })
-const emit = defineEmits(['update:modelValue', 'search'])
+const emit = defineEmits(['update:modelValue', 'city-selected', 'search'])
 
-const cities = ref([])
+const suggestions = ref([])
 const open = ref(false)
 const activeIndex = ref(-1)
+const loading = ref(false)
 const inputEl = ref(null)
 
-onMounted(async () => {
+let debounceTimer = null
+// Track whether the current value was confirmed by selecting a suggestion.
+// pendingWatchSkips prevents our own emits from being treated as external updates.
+let pendingWatchSkips = 0
+const confirmed = ref(!!props.modelValue)
+const lastConfirmed = ref(props.modelValue || '')
+
+// When the parent resets the form externally, treat the new value as confirmed.
+watch(() => props.modelValue, (val) => {
+  if (pendingWatchSkips > 0) { pendingWatchSkips--; return }
+  lastConfirmed.value = val || ''
+  confirmed.value = true
+}, { flush: 'sync' })
+
+async function fetchSuggestions(q) {
+  if (!q || q.length < 2) { suggestions.value = []; return }
+  loading.value = true
   try {
-    const res = await api.get('/users/cities')
-    cities.value = res.data
-  } catch { /* ignore */ }
-  document.addEventListener('click', onOutsideClick, true)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('click', onOutsideClick, true)
-})
-
-const suggestions = computed(() => {
-  const q = props.modelValue.trim().toLowerCase()
-  if (!q) return []
-  return cities.value.filter(c => c.toLowerCase().includes(q)).slice(0, 8)
-})
-
-function onInput(e) {
-  emit('update:modelValue', e.target.value)
-  open.value = true
-  activeIndex.value = -1
+    const res = await fetch(
+      `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&type=municipality&limit=8&autocomplete=1`
+    )
+    const data = await res.json()
+    suggestions.value = (data.features ?? []).map(f => ({
+      name: f.properties.city || f.properties.name,
+      postalCode: f.properties.postcode,
+      label: `${f.properties.city || f.properties.name} (${f.properties.postcode})`,
+    }))
+  } catch {
+    suggestions.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
-function select(city) {
-  emit('update:modelValue', city)
+function onInput(e) {
+  pendingWatchSkips++
+  emit('update:modelValue', e.target.value)
+  confirmed.value = false
+  open.value = true
+  activeIndex.value = -1
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => fetchSuggestions(e.target.value), 300)
+}
+
+function select(item) {
+  pendingWatchSkips++
+  emit('update:modelValue', item.name)
+  emit('city-selected', { name: item.name, postalCode: item.postalCode })
+  confirmed.value = true
+  lastConfirmed.value = item.name
   open.value = false
   activeIndex.value = -1
+  suggestions.value = []
+}
+
+function onBlur(e) {
+  const currentVal = e.target.value
+  // Delay to let mousedown.prevent on suggestions fire select() first.
+  setTimeout(() => {
+    if (confirmed.value) return
+    if (currentVal === '') {
+      // User explicitly cleared the field — accept it.
+      lastConfirmed.value = ''
+      confirmed.value = true
+      pendingWatchSkips++
+      emit('update:modelValue', '')
+      emit('city-selected', { name: '', postalCode: null })
+    } else {
+      // Free-typed text not from a suggestion — revert.
+      pendingWatchSkips++
+      emit('update:modelValue', lastConfirmed.value)
+    }
+    open.value = false
+    activeIndex.value = -1
+    suggestions.value = []
+  }, 200)
 }
 
 function onKeydown(e) {
@@ -57,12 +105,8 @@ function onKeydown(e) {
     activeIndex.value = Math.max(activeIndex.value - 1, -1)
   } else if (e.key === 'Enter') {
     e.preventDefault()
-    if (activeIndex.value >= 0) {
-      select(suggestions.value[activeIndex.value])
-    } else {
-      open.value = false
-      emit('search')
-    }
+    if (activeIndex.value >= 0) select(suggestions.value[activeIndex.value])
+    else { open.value = false; emit('search') }
   } else if (e.key === 'Escape') {
     open.value = false
     activeIndex.value = -1
@@ -75,6 +119,12 @@ function onOutsideClick(e) {
     activeIndex.value = -1
   }
 }
+
+document.addEventListener('click', onOutsideClick, true)
+onUnmounted(() => {
+  document.removeEventListener('click', onOutsideClick, true)
+  clearTimeout(debounceTimer)
+})
 </script>
 
 <template>
@@ -85,18 +135,20 @@ function onOutsideClick(e) {
       :class="inputClass"
       autocomplete="off"
       @input="onInput"
-      @focus="open = suggestions.length > 0"
       @keydown="onKeydown"
+      @blur="onBlur"
+      @focus="open = suggestions.length > 0"
     />
     <ul v-if="open && suggestions.length" class="city-dropdown">
       <li
-        v-for="(city, i) in suggestions"
-        :key="city"
+        v-for="(item, i) in suggestions"
+        :key="item.postalCode + item.name"
         :class="['city-option', { 'city-option--active': i === activeIndex }]"
-        @mousedown.prevent="select(city)"
+        @mousedown.prevent="select(item)"
       >
         <v-icon size="12" color="text-subtle">mdi-map-marker-outline</v-icon>
-        {{ city }}
+        {{ item.name }}
+        <span class="city-postal">{{ item.postalCode }}</span>
       </li>
     </ul>
   </div>
@@ -136,4 +188,13 @@ function onOutsideClick(e) {
 }
 .city-option:hover,
 .city-option--active { background: var(--c-primary-bg); color: var(--c-primary); }
+
+.city-postal {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--c-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+.city-option--active .city-postal,
+.city-option:hover .city-postal { color: var(--c-primary); opacity: 0.7; }
 </style>

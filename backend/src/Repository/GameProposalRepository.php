@@ -14,7 +14,7 @@ class GameProposalRepository extends ServiceEntityRepository
         parent::__construct($registry, GameProposal::class);
     }
 
-    public function findByFilters(?string $city, ?string $surface, ?string $gameType, ?string $status, ?int $authorId = null): array
+    public function findByFilters(?string $city, ?string $surface, ?string $gameType, ?string $status, ?int $authorId = null, ?string $department = null): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.author', 'u')->addSelect('u')
@@ -23,6 +23,9 @@ class GameProposalRepository extends ServiceEntityRepository
 
         if ($city) {
             $qb->andWhere('p.city LIKE :city')->setParameter('city', '%' . $city . '%');
+        }
+        if ($department) {
+            $qb->andWhere('p.postalCode LIKE :dept')->setParameter('dept', $department . '%');
         }
         if ($surface) {
             $qb->andWhere('p.surface = :surface')->setParameter('surface', $surface);

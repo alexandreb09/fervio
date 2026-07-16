@@ -5,6 +5,7 @@ import api from '@/api'
 import { STORAGE_BASE } from '@/utils/avatar'
 import { CITIES } from '@/data/cities'
 import { FAQ_ITEMS } from '@/data/faq'
+import CityInput from '@/components/CityInput.vue'
 
 const router = useRouter()
 const popularCities = CITIES.slice(0, 8)
@@ -33,13 +34,13 @@ function formatDate(d) {
   const today = new Date()
   const tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1)
   if (date.toDateString() === today.toDateString())
-    return `Aujourd'hui · ${date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })}`
+    return `Aujourd'hui · ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
   if (date.toDateString() === tomorrow.toDateString())
-    return `Demain · ${date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })}`
-  return date.toLocaleDateString('fr-FR', { day:'numeric', month:'short' }) + ' · ' + date.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' })
+    return `Demain · ${date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' · ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 }
 
-const ACCENTS = ['C25228','D97706','059669','2563EB','7C3AED','DB2777','0891B2','65A30D']
+const ACCENTS = ['C25228', 'D97706', '059669', '2563EB', '7C3AED', 'DB2777', '0891B2', '65A30D']
 
 function accent(u) {
   const s = `${u?.firstName}${u?.lastName}` || ''
@@ -74,18 +75,15 @@ function avatarUrl(u) {
           Trouvez votre<br>partenaire<br>de tennis
         </h1>
         <p class="hero-subtitle">
-          Rejoignez des joueurs de votre niveau près de chez vous. Publiez une annonce, rejoignez une partie, progressez ensemble.
+          Rejoignez des joueurs de votre niveau près de chez vous. Publiez une annonce, rejoignez une partie, progressez
+          ensemble.
         </p>
 
         <!-- Search -->
         <div class="hero-search">
           <v-icon color="text-subtle" size="18">mdi-map-marker</v-icon>
-          <input
-            v-model="search"
-            placeholder="Votre ville..."
-            class="hero-search-input"
-            @keyup.enter="doSearch"
-          />
+          <CityInput v-model="search" placeholder="Votre ville..." input-class="hero-search-input"
+            @city-selected="e => { search = e.name }" @search="doSearch" />
           <button class="hero-search-btn" @click="doSearch">Rechercher</button>
         </div>
 
@@ -103,15 +101,11 @@ function avatarUrl(u) {
     <!-- ── Stats ── -->
     <section class="stats-section">
       <div class="stats-inner">
-        <div
-          v-for="stat in [
-            { n: '100%', label: 'Gratuit', icon: 'mdi-gift-outline' },
-            { n: recentPlayers.length + '+', label: 'Joueurs inscrits', icon: 'mdi-account-group-outline' },
-            { n: recentProposals.length + '+', label: 'Parties disponibles', icon: 'mdi-calendar-check-outline' },
-          ]"
-          :key="stat.label"
-          class="fin-stat stat-item"
-        >
+        <div v-for="stat in [
+          { n: '100%', label: 'Gratuit', icon: 'mdi-gift-outline' },
+          { n: recentPlayers.length + '+', label: 'Joueurs inscrits', icon: 'mdi-account-group-outline' },
+          { n: recentProposals.length + '+', label: 'Parties disponibles', icon: 'mdi-calendar-check-outline' },
+        ]" :key="stat.label" class="fin-stat stat-item">
           <v-icon :icon="stat.icon" color="primary" size="20" class="mb-1" />
           <div class="stat-number">{{ stat.n }}</div>
           <div class="stat-label">{{ stat.label }}</div>
@@ -131,12 +125,8 @@ function avatarUrl(u) {
         </div>
 
         <div v-if="!loading" class="proposals-grid">
-          <router-link
-            v-for="p in recentProposals"
-            :key="p.publicId"
-            :to="`/annonces/${p.publicId}`"
-            class="fin-card proposal-card"
-          >
+          <router-link v-for="p in recentProposals" :key="p.publicId" :to="`/annonces/${p.publicId}`"
+            class="fin-card proposal-card">
             <div class="proposal-card-top">
               <span :class="p.status === 'full' ? 'badge badge-amber' : 'badge badge-green'">
                 {{ p.status === 'full' ? 'Complet' : 'Disponible' }}
@@ -175,13 +165,8 @@ function avatarUrl(u) {
         </div>
 
         <div v-if="!loading" class="players-grid">
-          <router-link
-            v-for="p in recentPlayers"
-            :key="p.id"
-            :to="`/joueurs/${p.publicId}`"
-            class="fin-card player-card"
-            :style="{ '--accent': `#${accent(p)}` }"
-          >
+          <router-link v-for="p in recentPlayers" :key="p.id" :to="`/joueurs/${p.publicId}`"
+            class="fin-card player-card" :style="{ '--accent': `#${accent(p)}` }">
             <v-avatar size="52" class="player-card-avatar">
               <v-img :src="avatarUrl(p)" :alt="`Photo de ${p.firstName} ${p.lastName}`" />
             </v-avatar>
@@ -202,15 +187,11 @@ function avatarUrl(u) {
           <h2 class="how-title">Comment ça marche ?</h2>
         </div>
         <div class="how-grid">
-          <div
-            v-for="(step, i) in [
-              { icon:'mdi-account-plus-outline', title:'Créez votre profil', desc:'Inscrivez-vous gratuitement et renseignez votre classement FFT.' },
-              { icon:'mdi-magnify', title:'Trouvez un partenaire raquette', desc:'Recherchez un partenaire de tennis par ville, classement FFT ou type de jeu — simple, double ou mixte.' },
-              { icon:'mdi-message-outline', title:'Jouez ensemble', desc:'Contactez les joueurs, organisez vos parties et progressez.' },
-            ]"
-            :key="i"
-            class="how-step"
-          >
+          <div v-for="(step, i) in [
+            { icon: 'mdi-account-plus-outline', title: 'Créez votre profil', desc: 'Inscrivez-vous gratuitement et renseignez votre classement FFT.' },
+            { icon: 'mdi-magnify', title: 'Trouvez un partenaire raquette', desc: 'Recherchez un partenaire de tennis par ville, classement FFT ou type de jeu — simple, double ou mixte.' },
+            { icon: 'mdi-message-outline', title: 'Jouez ensemble', desc: 'Contactez les joueurs, organisez vos parties et progressez.' },
+          ]" :key="i" class="how-step">
             <div class="how-step-icon">
               <v-icon :icon="step.icon" color="primary" size="18" />
             </div>
@@ -226,6 +207,37 @@ function avatarUrl(u) {
         </div>
       </section>
 
+      <!-- ── Services proposés ── -->
+      <section class="home-section services-section">
+        <div class="services-card">
+          <div class="services-header">
+            <p class="fin-label section-header-label">Services proposés</p>
+            <h2 class="section-title">Jouez au tennis quand et où vous voulez</h2>
+          </div>
+          <div class="services-body">
+            <p class="services-text">
+              Fervio vous donne la possibilité de contacter un joueur inscrit, en fonction de sa ville et/ou de son
+              classement FFT.
+            </p>
+            <p class="services-text">
+              Le site permet également de proposer des créneaux pour des parties futures. Ces propositions de jeu sont
+              visibles sans inscription.
+            </p>
+            <div class="services-notes">
+              <p class="services-note">
+                <v-icon size="13" color="text-subtle">mdi-lightbulb-outline</v-icon>
+                Par exemple, un joueur peut programmer des parties ou rechercher un partenaire de tennis sur son lieu
+                de vacances à venir — Côte d'Azur, Bretagne, Alpes…
+              </p>
+              <p class="services-note">
+                <v-icon size="13" color="text-subtle">mdi-lightbulb-outline</v-icon>
+                Par exemple, un joueur peut programmer des séances d'entrainement assidues pour le mois à venir.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ── Villes populaires ── -->
       <section class="home-section cities-section">
         <div class="section-header">
@@ -235,12 +247,7 @@ function avatarUrl(u) {
           </div>
         </div>
         <div class="cities-row">
-          <router-link
-            v-for="c in popularCities"
-            :key="c.slug"
-            :to="`/partenaire-tennis/${c.slug}`"
-            class="city-chip"
-          >
+          <router-link v-for="c in popularCities" :key="c.slug" :to="`/partenaire-tennis/${c.slug}`" class="city-chip">
             {{ c.name }}
           </router-link>
           <span class="city-chip city-chip--more">et bien d'autres…</span>
@@ -274,6 +281,7 @@ function avatarUrl(u) {
   background: linear-gradient(150deg, #1C0A03 0%, #5C200E 45%, #8B3214 100%);
   padding: 88px 24px 80px;
 }
+
 /* Halo lumineux décalé en haut à droite */
 .hero-glow {
   position: absolute;
@@ -282,9 +290,10 @@ function avatarUrl(u) {
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,180,120,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 180, 120, 0.18) 0%, transparent 70%);
   pointer-events: none;
 }
+
 /* Tennis ball watermark */
 .hero-ball {
   position: absolute;
@@ -294,7 +303,12 @@ function avatarUrl(u) {
   opacity: 0.055;
   line-height: 1;
 }
-.hero-ball .mdi { font-size: 560px; color: #fff; display: block; }
+
+.hero-ball .mdi {
+  font-size: 560px;
+  color: #fff;
+  display: block;
+}
 
 .hero-inner {
   max-width: 680px;
@@ -303,21 +317,23 @@ function avatarUrl(u) {
   position: relative;
   z-index: 1;
 }
+
 .hero-label {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   margin-bottom: 22px;
-  background: rgba(255,255,255,.1);
-  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255, 255, 255, .1);
+  border: 1px solid rgba(255, 255, 255, .18);
   border-radius: 999px;
   padding: 5px 14px 5px 10px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.8);
+  color: rgba(255, 255, 255, .8);
 }
+
 .hero-title {
   font-family: 'Barlow Condensed', 'Inter', sans-serif;
   font-size: clamp(2.2rem, 6vw, 3.8rem);
@@ -328,14 +344,16 @@ function avatarUrl(u) {
   color: #fff;
   margin: 0 0 22px;
 }
+
 .hero-subtitle {
   font-size: 16px;
-  color: rgba(255,255,255,.65);
+  color: rgba(255, 255, 255, .65);
   line-height: 1.65;
   max-width: 460px;
   margin: 0 auto 40px;
   font-weight: 400;
 }
+
 .hero-search {
   display: flex;
   align-items: center;
@@ -348,8 +366,13 @@ function avatarUrl(u) {
   background: #fff;
   box-shadow: 0 6px 28px rgba(0, 0, 0, 0.28);
 }
-.hero-search-input {
+
+.hero-search :deep(.city-wrap) {
   flex: 1;
+}
+
+.hero-search-input {
+  width: 100%;
   border: none;
   outline: none;
   font-size: 15px;
@@ -357,7 +380,15 @@ function avatarUrl(u) {
   color: var(--c-text);
   background: transparent;
 }
-.hero-search-input::placeholder { color: var(--c-text-sm); }
+
+.hero-search-input::placeholder {
+  color: var(--c-text-sm);
+}
+
+.hero-search :deep(.city-dropdown) {
+  z-index: 200;
+}
+
 .hero-search-btn {
   background: var(--c-primary);
   color: #fff;
@@ -371,13 +402,18 @@ function avatarUrl(u) {
   white-space: nowrap;
   transition: background 0.1s;
 }
-.hero-search-btn:hover { background: var(--c-primary-dk); }
+
+.hero-search-btn:hover {
+  background: var(--c-primary-dk);
+}
+
 .hero-cta-row {
   display: flex;
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
 }
+
 .hero-cta-link {
   text-decoration: none;
   display: inline-flex;
@@ -385,18 +421,19 @@ function avatarUrl(u) {
   gap: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: rgba(255,255,255,.72);
+  color: rgba(255, 255, 255, .72);
   padding: 8px 16px;
-  border: 1px solid rgba(255,255,255,.2);
+  border: 1px solid rgba(255, 255, 255, .2);
   border-radius: 8px;
-  background: rgba(255,255,255,.07);
+  background: rgba(255, 255, 255, .07);
   backdrop-filter: blur(4px);
   transition: all 0.12s;
 }
+
 .hero-cta-link:hover {
-  background: rgba(255,255,255,.15);
+  background: rgba(255, 255, 255, .15);
   color: #fff;
-  border-color: rgba(255,255,255,.35);
+  border-color: rgba(255, 255, 255, .35);
 }
 
 /* ── Stats ── */
@@ -405,6 +442,7 @@ function avatarUrl(u) {
   border-bottom: 1px solid #DFC0A5;
   padding: 24px;
 }
+
 .stats-inner {
   max-width: 1120px;
   margin: 0 auto;
@@ -413,34 +451,97 @@ function avatarUrl(u) {
   justify-content: center;
   flex-wrap: wrap;
 }
-.stat-item { flex: 1; min-width: 140px; max-width: 180px; }
-.stat-number { font-size: 22px; font-weight: 800; color: #7A2E12; letter-spacing: -0.03em; }
-.stat-label { font-size: 12px; color: var(--c-text-md); font-weight: 500; margin-top: 2px; }
+
+.stat-item {
+  flex: 1;
+  min-width: 140px;
+  max-width: 180px;
+}
+
+.stat-number {
+  font-size: 22px;
+  font-weight: 800;
+  color: #7A2E12;
+  letter-spacing: -0.03em;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--c-text-md);
+  font-weight: 500;
+  margin-top: 2px;
+}
 
 /* ── Sections ── */
-.home-section { margin-bottom: 56px; }
+.home-section {
+  margin-bottom: 56px;
+}
+
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
 }
-.section-header-label { margin: 0 0 4px; }
-.section-title { font-size: 20px; font-weight: 700; letter-spacing: -0.03em; color: var(--c-text); margin: 0; }
-.section-see-all { font-size: 13px; font-weight: 600; color: var(--c-primary); text-decoration: none; }
-.section-see-all:hover { text-decoration: underline; }
+
+.section-header-label {
+  margin: 0 0 4px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--c-text);
+  margin: 0;
+}
+
+.section-see-all {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-primary);
+  text-decoration: none;
+}
+
+.section-see-all:hover {
+  text-decoration: underline;
+}
 
 /* ── Proposals grid ── */
-.proposals-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-.proposal-card { text-decoration: none; display: block; padding: 18px 20px; }
+.proposals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.proposal-card {
+  text-decoration: none;
+  display: block;
+  padding: 18px 20px;
+}
+
 .proposal-card-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 10px;
 }
-.proposal-count { font-size: 12px; color: var(--c-text-sm); font-weight: 500; }
-.proposal-card-title { font-size: 14px; font-weight: 700; color: var(--c-text); letter-spacing: -0.01em; margin: 0 0 8px; line-height: 1.3; }
+
+.proposal-count {
+  font-size: 12px;
+  color: var(--c-text-sm);
+  font-weight: 500;
+}
+
+.proposal-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-text);
+  letter-spacing: -0.01em;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+
 .proposal-card-date {
   font-size: 12px;
   color: var(--c-primary);
@@ -450,6 +551,7 @@ function avatarUrl(u) {
   align-items: center;
   gap: 4px;
 }
+
 .proposal-card-city {
   font-size: 12px;
   color: var(--c-text-sm);
@@ -458,7 +560,13 @@ function avatarUrl(u) {
   align-items: center;
   gap: 4px;
 }
-.proposal-card-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.proposal-card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
 .empty-grid-msg {
   grid-column: 1 / -1;
   text-align: center;
@@ -469,7 +577,12 @@ function avatarUrl(u) {
 }
 
 /* ── Players grid ── */
-.players-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
 .player-card {
   text-decoration: none;
   padding: 20px 16px;
@@ -477,9 +590,23 @@ function avatarUrl(u) {
   display: block;
   border-top: 3px solid var(--accent, var(--c-primary));
 }
-.player-card-avatar { margin-bottom: 10px; }
-.player-card-name { font-size: 13px; font-weight: 700; color: var(--c-text); margin-bottom: 2px; }
-.player-card-city { font-size: 12px; color: var(--c-text-sm); margin-bottom: 8px; }
+
+.player-card-avatar {
+  margin-bottom: 10px;
+}
+
+.player-card-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--c-text);
+  margin-bottom: 2px;
+}
+
+.player-card-city {
+  font-size: 12px;
+  color: var(--c-text-sm);
+  margin-bottom: 8px;
+}
 
 /* ── How it works ── */
 .how-section {
@@ -487,9 +614,22 @@ function avatarUrl(u) {
   border: 1px solid var(--c-border);
   border-radius: 16px;
   padding: 40px 36px;
+  margin-bottom: 56px;
 }
-.how-header { text-align: center; margin-bottom: 32px; }
-.how-title { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--c-text); margin: 0; }
+
+.how-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.how-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--c-text);
+  margin: 0;
+}
+
 .how-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -497,9 +637,14 @@ function avatarUrl(u) {
   max-width: 820px;
   margin: 0 auto 32px;
 }
+
 @media (max-width: 600px) {
-  .how-grid { grid-template-columns: 1fr; max-width: 100%; }
+  .how-grid {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
 }
+
 .how-step {
   background: #fff;
   border: 1px solid var(--c-border);
@@ -510,6 +655,7 @@ function avatarUrl(u) {
   align-items: center;
   text-align: center;
 }
+
 .how-step-icon {
   width: 40px;
   height: 40px;
@@ -521,14 +667,95 @@ function avatarUrl(u) {
   margin-bottom: 14px;
   flex-shrink: 0;
 }
-.how-step-number { font-size: 11px; font-weight: 700; color: var(--c-primary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
-.how-step-title { font-size: 14px; font-weight: 700; color: var(--c-text); margin-bottom: 6px; letter-spacing: -0.01em; }
-.how-step-desc { font-size: 13px; color: var(--c-text-md); line-height: 1.5; }
-.how-cta { text-align: center; }
+
+.how-step-number {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.how-step-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-text);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.how-step-desc {
+  font-size: 13px;
+  color: var(--c-text-md);
+  line-height: 1.5;
+}
+
+.how-cta {
+  text-align: center;
+}
+
+/* ── Services proposés ── */
+.services-card {
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 16px;
+  padding: 32px 36px;
+}
+
+.services-header {
+  margin-bottom: 20px;
+}
+
+.services-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.services-text {
+  font-size: 15px;
+  color: var(--c-text-md);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.services-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-left: 12px;
+  border-left: 2px solid var(--c-border);
+}
+
+.services-note {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--c-text-sm);
+  line-height: 1.65;
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .services-card {
+    padding: 24px 20px;
+  }
+}
 
 /* ── Villes populaires ── */
-.cities-section { margin-top: 44px; }
-.cities-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.cities-section {
+  margin-top: 44px;
+}
+
+.cities-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .city-chip {
   font-size: 13px;
   font-weight: 500;
@@ -539,18 +766,50 @@ function avatarUrl(u) {
   border-radius: 999px;
   transition: all 0.12s;
 }
-.city-chip:hover { color: var(--c-primary); border-color: var(--c-primary); background: var(--c-primary-bg); }
-.city-chip--more { color: var(--c-text-sm); border-style: dashed; cursor: default; font-style: italic; }
+
+.city-chip:hover {
+  color: var(--c-primary);
+  border-color: var(--c-primary);
+  background: var(--c-primary-bg);
+}
+
+.city-chip--more {
+  color: var(--c-text-sm);
+  border-style: dashed;
+  cursor: default;
+  font-style: italic;
+}
 
 /* ── FAQ ── */
-.faq-list { display: flex; flex-direction: column; gap: 8px; }
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .faq-item {
   background: #fff;
   border: 1px solid var(--c-border);
   border-radius: 10px;
   padding: 14px 18px;
 }
-.faq-question { font-size: 14px; font-weight: 700; color: var(--c-text); cursor: pointer; list-style: none; }
-.faq-question::-webkit-details-marker { display: none; }
-.faq-answer { font-size: 13px; color: var(--c-text-md); line-height: 1.6; margin: 10px 0 0; }
+
+.faq-question {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--c-text);
+  cursor: pointer;
+  list-style: none;
+}
+
+.faq-question::-webkit-details-marker {
+  display: none;
+}
+
+.faq-answer {
+  font-size: 13px;
+  color: var(--c-text-md);
+  line-height: 1.6;
+  margin: 10px 0 0;
+}
 </style>
