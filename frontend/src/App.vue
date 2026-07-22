@@ -79,7 +79,7 @@ watch(isLoggedIn, (val) => {
         <!-- Desktop nav -->
         <nav class="d-none d-md-flex align-center nav-links">
           <router-link
-            v-for="item in [{ to: '/joueurs', label: 'Joueurs' }, { to: '/annonces', label: 'Annonces' }]"
+            v-for="item in [{ to: '/joueurs', label: 'Joueurs' }, { to: '/parties', label: 'Parties publiques' }]"
             :key="item.to"
             :to="item.to"
             class="nav-link"
@@ -91,7 +91,7 @@ watch(isLoggedIn, (val) => {
 
         <!-- Desktop auth -->
         <div class="d-none d-md-flex align-center nav-auth">
-          <router-link to="/annonces/nouvelle" class="btn-propose">
+          <router-link to="/parties/nouvelle" class="btn-propose">
             <v-icon size="14">mdi-plus</v-icon> Proposer une partie
           </router-link>
 
@@ -120,7 +120,7 @@ watch(isLoggedIn, (val) => {
                   <router-link
                     v-for="n in notifications.items"
                     :key="n.id"
-                    :to="`/annonces/${n.data.proposalPublicId}`"
+                    :to="`/parties/${n.data.proposalPublicId}`"
                     class="notif-item"
                     @click="bellOpen = false"
                   >
@@ -197,7 +197,7 @@ watch(isLoggedIn, (val) => {
                   <router-link
                     v-for="n in notifications.items"
                     :key="n.id"
-                    :to="`/annonces/${n.data.proposalPublicId}`"
+                    :to="`/parties/${n.data.proposalPublicId}`"
                     class="notif-item"
                     @click="mobileBellOpen = false"
                   >
@@ -230,7 +230,7 @@ watch(isLoggedIn, (val) => {
       </div>
       <div class="drawer-nav">
         <router-link
-          v-for="item in [{ to: '/joueurs', icon: 'mdi-account-group', label: 'Joueurs' }, { to: '/annonces', icon: 'mdi-calendar-search', label: 'Annonces' }]"
+          v-for="item in [{ to: '/joueurs', icon: 'mdi-account-group', label: 'Joueurs' }, { to: '/parties', icon: 'mdi-calendar-search', label: 'Parties publiques' }]"
           :key="item.to"
           :to="item.to"
           class="drawer-link"
@@ -240,7 +240,7 @@ watch(isLoggedIn, (val) => {
         </router-link>
 
         <div class="drawer-divider" />
-        <router-link to="/annonces/nouvelle" class="drawer-link" @click="drawer = false">
+        <router-link to="/parties/nouvelle" class="drawer-link" @click="drawer = false">
           <v-icon size="17" color="primary">mdi-plus-circle</v-icon> Proposer une partie
         </router-link>
 
@@ -288,7 +288,7 @@ watch(isLoggedIn, (val) => {
         </span>
         <div class="footer-links">
           <router-link to="/joueurs" class="footer-link">Joueurs</router-link>
-          <router-link to="/annonces" class="footer-link">Annonces</router-link>
+          <router-link to="/parties" class="footer-link">Parties</router-link>
           <router-link to="/pourquoi-fervio" class="footer-link">Pourquoi Fervio</router-link>
         </div>
       </div>

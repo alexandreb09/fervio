@@ -3,6 +3,6 @@ Allow: /
 
 Disallow: /profil
 Disallow: /messages
-Disallow: /annonces/nouvelle
+Disallow: /parties/nouvelle
 
 Sitemap: https://fervio.fr/sitemap.xml

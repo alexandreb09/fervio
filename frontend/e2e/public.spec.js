@@ -12,7 +12,7 @@ test.describe("Page d'accueil (/)", () => {
     await expect(page.locator('text=Comment ça marche')).toBeVisible()
   })
 
-  test('affiche les annonces et joueurs récents chargés depuis l\'API', async ({ page }) => {
+  test('affiche les parties et joueurs récents chargés depuis l\'API', async ({ page }) => {
     await mockPublicApis(page, { proposals: MOCK_PROPOSALS, players: MOCK_PLAYERS })
     await page.goto('/')
     await expect(page.locator('text=Partie de simple samedi matin')).toBeVisible()
@@ -21,10 +21,10 @@ test.describe("Page d'accueil (/)", () => {
     await expect(page.locator('text=Bob Martin')).toBeVisible()
   })
 
-  test('affiche un message vide si aucune annonce disponible', async ({ page }) => {
+  test('affiche un message vide si aucune partie disponible', async ({ page }) => {
     await mockPublicApis(page, { proposals: [], players: [] })
     await page.goto('/')
-    await expect(page.locator('text=Aucune annonce disponible')).toBeVisible()
+    await expect(page.locator('text=Aucune partie disponible')).toBeVisible()
   })
 
   test('la recherche par ville redirige vers /joueurs?city=...', async ({ page }) => {
@@ -42,11 +42,11 @@ test.describe("Page d'accueil (/)", () => {
     await expect(page).toHaveURL('/joueurs')
   })
 
-  test('le lien "Voir les annonces" navigue vers /annonces', async ({ page }) => {
+  test('le lien "Voir les parties" navigue vers /parties', async ({ page }) => {
     await mockPublicApis(page, { proposals: MOCK_PROPOSALS, players: MOCK_PLAYERS })
     await page.goto('/')
-    await page.click('text=→ Voir les annonces')
-    await expect(page).toHaveURL('/annonces')
+    await page.click('text=→ Voir les parties')
+    await expect(page).toHaveURL('/parties')
   })
 
   test('le lien "Rejoindre gratuitement" navigue vers /inscription', async ({ page }) => {
@@ -57,42 +57,42 @@ test.describe("Page d'accueil (/)", () => {
   })
 })
 
-// ── Page des annonces ─────────────────────────────────────────────────────────
+// ── Page des parties ─────────────────────────────────────────────────────────
 
-test.describe('Page des annonces (/annonces)', () => {
-  test('affiche la liste des annonces avec titre et badges de statut', async ({ page }) => {
+test.describe('Page des parties (/parties)', () => {
+  test('affiche la liste des parties avec titre et badges de statut', async ({ page }) => {
     await mockPublicApis(page, { proposals: MOCK_PROPOSALS })
-    await page.goto('/annonces')
-    await expect(page.locator('h1')).toContainText('Annonces')
+    await page.goto('/parties')
+    await expect(page.locator('h1')).toContainText('Parties')
     await expect(page.locator('text=Partie de simple samedi matin')).toBeVisible()
     await expect(page.locator('text=Double mixte dimanche après-midi')).toBeVisible()
     await expect(page.locator('.badge-green').first()).toContainText('Disponible')
     await expect(page.locator('.badge-amber').first()).toContainText('Complet')
   })
 
-  test('affiche le nombre d\'annonces trouvées', async ({ page }) => {
+  test('affiche le nombre de parties trouvées', async ({ page }) => {
     await mockPublicApis(page, { proposals: MOCK_PROPOSALS })
-    await page.goto('/annonces')
-    await expect(page.locator('.list-count')).toContainText('2 annonces')
+    await page.goto('/parties')
+    await expect(page.locator('.list-count')).toContainText('2 parties')
   })
 
-  test('affiche l\'état vide quand aucune annonce ne correspond', async ({ page }) => {
+  test('affiche l\'état vide quand aucune partie ne correspond', async ({ page }) => {
     await mockPublicApis(page, { proposals: [] })
-    await page.goto('/annonces')
-    await expect(page.locator('text=Aucune annonce trouvée')).toBeVisible()
+    await page.goto('/parties')
+    await expect(page.locator('text=Aucune partie trouvée')).toBeVisible()
   })
 
-  test('ne montre pas le bouton "Nouvelle annonce" pour un visiteur non connecté', async ({ page }) => {
+  test('ne montre pas le bouton "Nouvelle partie" pour un visiteur non connecté', async ({ page }) => {
     await mockPublicApis(page, { proposals: [] })
-    await page.goto('/annonces')
-    await expect(page.locator('text=Nouvelle annonce')).not.toBeVisible()
+    await page.goto('/parties')
+    await expect(page.locator('text=Nouvelle partie')).not.toBeVisible()
   })
 
-  test('un clic sur une annonce navigue vers sa page de détail', async ({ page }) => {
+  test('un clic sur une partie navigue vers sa page de détail', async ({ page }) => {
     await mockPublicApis(page, { proposals: MOCK_PROPOSALS })
-    await page.goto('/annonces')
+    await page.goto('/parties')
     await page.click('text=Partie de simple samedi matin')
-    await expect(page).toHaveURL('/annonces/1')
+    await expect(page).toHaveURL('/parties/1')
   })
 })
 
@@ -124,9 +124,9 @@ test.describe('Garde de routes (non connecté)', () => {
     await expect(page.locator('h1')).toContainText('Connexion')
   })
 
-  test('/annonces/nouvelle redirige vers /connexion avec paramètre redirect', async ({ page }) => {
-    await page.goto('/annonces/nouvelle')
-    await expect(page).toHaveURL(/\/connexion.*redirect.*annonces/)
+  test('/parties/nouvelle redirige vers /connexion avec paramètre redirect', async ({ page }) => {
+    await page.goto('/parties/nouvelle')
+    await expect(page).toHaveURL(/\/connexion.*redirect.*parties/)
     await expect(page.locator('h1')).toContainText('Connexion')
   })
 

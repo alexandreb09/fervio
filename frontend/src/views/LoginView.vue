@@ -8,7 +8,7 @@ const route = useRoute()
 const auth = useAuthStore()
 
 const REDIRECT_HINTS = {
-  '/annonces/nouvelle': { icon: 'mdi-calendar-plus-outline', text: 'Connectez-vous pour publier une annonce de partie.' },
+  '/parties/nouvelle': { icon: 'mdi-calendar-plus-outline', text: 'Connectez-vous pour publier une partie.' },
   '/messages':          { icon: 'mdi-message-outline',       text: 'Connectez-vous pour accéder à vos messages.' },
   '/profil':            { icon: 'mdi-account-outline',       text: 'Connectez-vous pour accéder à votre profil.' },
 }

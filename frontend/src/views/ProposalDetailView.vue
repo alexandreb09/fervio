@@ -28,7 +28,7 @@ onMounted(async () => {
   try {
     const res = await api.get(`/proposals/${route.params.id}`)
     proposal.value = res.data
-  } catch { router.push('/annonces') }
+  } catch { router.push('/parties') }
   finally { loading.value = false }
 })
 
@@ -72,8 +72,8 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
 
     <template v-else-if="proposal">
       <!-- Back -->
-      <router-link to="/annonces" class="back-link">
-        <v-icon size="14">mdi-arrow-left</v-icon> Retour aux annonces
+      <router-link to="/parties" class="back-link">
+        <v-icon size="14">mdi-arrow-left</v-icon> Retour aux parties
       </router-link>
 
       <!-- Main card -->
@@ -224,7 +224,7 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
             <v-icon size="15">mdi-message-outline</v-icon> Contacter l'organisateur
           </button>
           <button v-if="!isAuthor" class="proposal-report-link" @click="reportDialog = true">
-            <v-icon size="13">mdi-flag-outline</v-icon> Signaler cette annonce
+            <v-icon size="13">mdi-flag-outline</v-icon> Signaler cette partie
           </button>
         </template>
 
@@ -247,7 +247,7 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
         <template v-else>
           <textarea
             v-model="msgText"
-            placeholder="Bonjour, je suis intéressé par votre annonce…"
+            placeholder="Bonjour, je suis intéressé par votre partie…"
             rows="4"
             class="field-input dialog-textarea"
           />

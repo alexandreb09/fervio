@@ -7,16 +7,16 @@ import {
   MOCK_PRIVATE_PROPOSAL,
 } from './helpers.js'
 
-// ── Vue de l'auteur (/annonces/1) ─────────────────────────────────────────────
+// ── Vue de l'auteur (/parties/1) ─────────────────────────────────────────────
 
-test.describe("Détail d'une annonce — vue de l'auteur", () => {
+test.describe("Détail d'une partie — vue de l'auteur", () => {
   test('affiche le titre, le statut et le type de partie', async ({ page }) => {
     await loginAs(page)
     await page.route(/\/api\/proposals\/1$/, (route) =>
       route.fulfill({ json: MOCK_PROPOSAL_DETAIL })
     )
 
-    await page.goto('/annonces/1')
+    await page.goto('/parties/1')
     await expect(page.locator('.detail-title')).toContainText('Partie de simple samedi matin')
     await expect(page.locator('.badge-green')).toContainText('Disponible')
     await expect(page.locator('.badge-purple:has-text("Simple")')).toBeVisible()
@@ -28,7 +28,7 @@ test.describe("Détail d'une annonce — vue de l'auteur", () => {
       route.fulfill({ json: MOCK_PROPOSAL_DETAIL })
     )
 
-    await page.goto('/annonces/1')
+    await page.goto('/parties/1')
     await expect(page.locator('.detail-title')).toBeVisible()
     await expect(page.locator('.btn-join')).not.toBeVisible()
     await expect(page.locator('.btn-contact')).not.toBeVisible()
@@ -40,7 +40,7 @@ test.describe("Détail d'une annonce — vue de l'auteur", () => {
       route.fulfill({ json: MOCK_PROPOSAL_DETAIL })
     )
 
-    await page.goto('/annonces/1')
+    await page.goto('/parties/1')
     await expect(page.locator('.detail-description-text')).toContainText(
       'Partie de simple en terre battue'
     )
@@ -52,27 +52,27 @@ test.describe("Détail d'une annonce — vue de l'auteur", () => {
       route.fulfill({ json: MOCK_PROPOSAL_DETAIL })
     )
 
-    await page.goto('/annonces/1')
+    await page.goto('/parties/1')
     await expect(page.locator('.detail-info-grid')).toContainText('Paris')
     await expect(page.locator('.detail-info-grid')).toContainText('Terre battue')
   })
 })
 
-// ── Rejoindre / Se désinscrire (/annonces/2) ─────────────────────────────────
+// ── Rejoindre / Se désinscrire (/parties/2) ─────────────────────────────────
 
-test.describe("Rejoindre et se désinscrire d'une annonce publique", () => {
+test.describe("Rejoindre et se désinscrire d'une partie publique", () => {
   test("affiche le bouton Rejoindre pour un utilisateur non-auteur", async ({ page }) => {
     await loginAs(page)
     await page.route(/\/api\/proposals\/2$/, (route) =>
       route.fulfill({ json: MOCK_PROPOSAL_BY_BOB })
     )
 
-    await page.goto('/annonces/2')
+    await page.goto('/parties/2')
     await expect(page.locator('.btn-join--join')).toBeVisible()
     await expect(page.locator('.btn-join--join')).toContainText('Rejoindre')
   })
 
-  test('rejoindre une annonce change le bouton en "Se désinscrire"', async ({ page }) => {
+  test('rejoindre une partie change le bouton en "Se désinscrire"', async ({ page }) => {
     await loginAs(page)
     await page.route(/\/api\/proposals\/2$/, (route) =>
       route.fulfill({ json: MOCK_PROPOSAL_BY_BOB })
@@ -81,7 +81,7 @@ test.describe("Rejoindre et se désinscrire d'une annonce publique", () => {
       route.fulfill({ json: MOCK_PROPOSAL_BY_BOB_JOINED })
     )
 
-    await page.goto('/annonces/2')
+    await page.goto('/parties/2')
     await page.locator('.btn-join--join').waitFor()
     await page.click('.btn-join--join')
     await expect(page.locator('.btn-join--leave')).toBeVisible()
@@ -98,7 +98,7 @@ test.describe("Rejoindre et se désinscrire d'une annonce publique", () => {
       route.fulfill({ json: MOCK_PROPOSAL_BY_BOB })
     )
 
-    await page.goto('/annonces/2')
+    await page.goto('/parties/2')
     await page.locator('.btn-join--leave').waitFor()
     await page.click('.btn-join--leave')
     await expect(page.locator('.btn-join--join')).toBeVisible()
@@ -113,7 +113,7 @@ test.describe("Rejoindre et se désinscrire d'une annonce publique", () => {
       route.fulfill({ json: MOCK_PROPOSAL_BY_BOB_JOINED })
     )
 
-    await page.goto('/annonces/2')
+    await page.goto('/parties/2')
     await expect(page.locator('.detail-progress-count')).toContainText('1 / 4')
     await page.click('.btn-join--join')
     await expect(page.locator('.detail-progress-count')).toContainText('2 / 4')
@@ -128,7 +128,7 @@ test.describe("Rejoindre et se désinscrire d'une annonce publique", () => {
       route.fulfill({ json: MOCK_PROPOSAL_BY_BOB_JOINED })
     )
 
-    await page.goto('/annonces/2')
+    await page.goto('/parties/2')
     await page.click('.btn-join--join')
     await expect(page.locator('.participant-name:has-text("Alice Dupont")')).toBeVisible()
   })
@@ -143,7 +143,7 @@ test.describe("Contacter l'organisateur", () => {
       route.fulfill({ json: MOCK_PROPOSAL_BY_BOB })
     )
 
-    await page.goto('/annonces/2')
+    await page.goto('/parties/2')
     await page.locator('.btn-contact').waitFor()
     await page.click('.btn-contact')
     await expect(page.locator('.dialog-box')).toBeVisible()
@@ -161,7 +161,7 @@ test.describe("Contacter l'organisateur", () => {
       return route.fulfill({ json: { id: 1 } })
     })
 
-    await page.goto('/annonces/2')
+    await page.goto('/parties/2')
     await page.click('.btn-contact')
     await page.fill('.dialog-textarea', 'Bonjour Bob, je suis intéressé !')
     await page.click('.dialog-btn-send')
@@ -175,7 +175,7 @@ test.describe("Contacter l'organisateur", () => {
       route.fulfill({ json: MOCK_PROPOSAL_BY_BOB })
     )
 
-    await page.goto('/annonces/2')
+    await page.goto('/parties/2')
     await page.click('.btn-contact')
     await expect(page.locator('.dialog-box')).toBeVisible()
     await page.click('.dialog-btn-cancel')
@@ -183,16 +183,16 @@ test.describe("Contacter l'organisateur", () => {
   })
 })
 
-// ── Annonce privée (/annonces/3) ──────────────────────────────────────────────
+// ── Partie privée (/parties/3) ──────────────────────────────────────────────
 
-test.describe('Annonce privée', () => {
+test.describe('Partie privée', () => {
   test('affiche le badge "Privée" et la notice du destinataire', async ({ page }) => {
     await loginAs(page)
     await page.route(/\/api\/proposals\/3$/, (route) =>
       route.fulfill({ json: MOCK_PRIVATE_PROPOSAL })
     )
 
-    await page.goto('/annonces/3')
+    await page.goto('/parties/3')
     await expect(page.locator('.badge-purple:has-text("Privée")')).toBeVisible()
     await expect(page.locator('.private-target-notice')).toBeVisible()
     await expect(page.locator('.private-target-notice')).toContainText('Alice Dupont')
@@ -204,7 +204,7 @@ test.describe('Annonce privée', () => {
       route.fulfill({ json: MOCK_PRIVATE_PROPOSAL })
     )
 
-    await page.goto('/annonces/3')
+    await page.goto('/parties/3')
     await expect(page.locator('.btn-join--join')).toBeVisible()
   })
 
@@ -225,7 +225,7 @@ test.describe('Annonce privée', () => {
       route.fulfill({ json: joined })
     )
 
-    await page.goto('/annonces/3')
+    await page.goto('/parties/3')
     await page.click('.btn-join--join')
     await expect(page.locator('.btn-join--leave')).toBeVisible()
   })

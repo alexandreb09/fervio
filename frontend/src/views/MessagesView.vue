@@ -75,7 +75,7 @@ onMounted(async () => {
     <div v-else class="empty-state">
       <v-icon size="40" color="border-light" class="mb-3">mdi-message-off-outline</v-icon>
       <p class="empty-state-title">Aucun message pour le moment</p>
-      <p class="empty-state-subtitle">Contactez un joueur ou un organisateur d'annonce.</p>
+      <p class="empty-state-subtitle">Contactez un joueur ou un organisateur de partie.</p>
       <router-link to="/joueurs" class="empty-state-cta">Voir les joueurs →</router-link>
     </div>
   </div>

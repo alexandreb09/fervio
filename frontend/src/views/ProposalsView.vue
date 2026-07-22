@@ -59,10 +59,10 @@ function formatDate(d) {
     <div class="page-top">
       <div>
         <p class="fin-label page-top-label">Communauté</p>
-        <h1 class="page-heading">Annonces</h1>
+        <h1 class="page-heading">Parties</h1>
       </div>
-      <router-link v-if="auth.isLoggedIn" to="/annonces/nouvelle" class="btn-primary btn-sm">
-        <v-icon size="15">mdi-plus</v-icon> Nouvelle annonce
+      <router-link v-if="auth.isLoggedIn" to="/parties/nouvelle" class="btn-primary btn-sm">
+        <v-icon size="15">mdi-plus</v-icon> Nouvelle partie
       </router-link>
     </div>
 
@@ -130,7 +130,7 @@ function formatDate(d) {
       <!-- List -->
       <div class="list-area">
         <p class="list-count">
-          <template v-if="!loading">{{ proposals.length }} annonce{{ proposals.length !== 1 ? 's' : '' }}</template>
+          <template v-if="!loading">{{ proposals.length }} partie{{ proposals.length !== 1 ? 's' : '' }}</template>
           <template v-else>Chargement…</template>
         </p>
 
@@ -142,7 +142,7 @@ function formatDate(d) {
           <router-link
             v-for="p in proposals"
             :key="p.publicId"
-            :to="`/annonces/${p.publicId}`"
+            :to="`/parties/${p.publicId}`"
             class="fin-card proposal-row"
           >
             <!-- Date block -->
@@ -193,9 +193,9 @@ function formatDate(d) {
 
         <div v-else class="empty-state">
           <v-icon size="36" color="border-light" class="mb-2">mdi-calendar-search</v-icon>
-          <p class="empty-state-text">Aucune annonce trouvée</p>
-          <router-link v-if="auth.isLoggedIn" to="/annonces/nouvelle" class="empty-state-cta">
-            Créer la première annonce
+          <p class="empty-state-text">Aucune partie trouvée</p>
+          <router-link v-if="auth.isLoggedIn" to="/parties/nouvelle" class="empty-state-cta">
+            Créer la première partie
           </router-link>
         </div>
       </div>

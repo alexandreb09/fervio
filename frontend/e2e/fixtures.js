@@ -150,7 +150,7 @@ export const MOCK_CONVERSATIONS = [
     partner: { id: 2, firstName: 'Bob', lastName: 'Martin', avatar: null },
     lastMessage: {
       createdAt: new Date().toISOString(),
-      content: 'Bonjour, je suis intéressé par votre annonce !',
+      content: 'Bonjour, je suis intéressé par votre partie !',
     },
     unreadCount: 1,
   },
@@ -159,7 +159,7 @@ export const MOCK_CONVERSATIONS = [
 export const MOCK_MESSAGES = [
   {
     id: 1,
-    content: 'Bonjour, je suis intéressé par votre annonce !',
+    content: 'Bonjour, je suis intéressé par votre partie !',
     createdAt: new Date().toISOString(),
     sender: { id: 2, firstName: 'Bob', lastName: 'Martin', avatar: null },
     isRead: true,

@@ -192,7 +192,7 @@ async function saveAccount() {
 }
 
 async function deleteProposal(id) {
-  if (!confirm('Supprimer cette annonce ?')) return
+  if (!confirm('Supprimer cette partie ?')) return
   await api.delete(`/proposals/${id}`)
   proposals.value = proposals.value.filter(p => p.id !== id)
 }
@@ -522,7 +522,7 @@ function surfaceLabel(v) {
           <div class="toggle-row">
             <div>
               <div class="toggle-title">Notification par email — Parties publiques</div>
-              <div class="toggle-desc">Recevoir un email quand quelqu'un répond à vos annonces</div>
+              <div class="toggle-desc">Recevoir un email quand quelqu'un répond à vos parties</div>
             </div>
             <button type="button"
               :class="accountForm.notifyProposalReplies ? 'toggle-btn toggle-on' : 'toggle-btn toggle-off'"
@@ -597,8 +597,8 @@ function surfaceLabel(v) {
     <!-- ── My proposals ── -->
     <div class="section-block">
       <div class="section-block-header">
-        <h2 class="section-block-title">Mes annonces</h2>
-        <router-link to="/annonces/nouvelle" class="btn-propose-sm">
+        <h2 class="section-block-title">Mes parties</h2>
+        <router-link to="/parties/nouvelle" class="btn-propose-sm">
           <v-icon size="13">mdi-plus</v-icon> Créer
         </router-link>
       </div>
@@ -610,7 +610,7 @@ function surfaceLabel(v) {
       <div v-else-if="proposals.length" class="proposals-list">
         <div v-for="p in proposals" :key="p.publicId" class="fin-card proposal-row">
           <div class="proposal-info">
-            <router-link :to="`/annonces/${p.publicId}`" class="proposal-link">
+            <router-link :to="`/parties/${p.publicId}`" class="proposal-link">
               <div class="proposal-title">{{ p.title }}</div>
             </router-link>
             <div class="proposal-meta">{{ formatDate(p.scheduledAt) }} · {{ p.city }}</div>
@@ -622,8 +622,8 @@ function surfaceLabel(v) {
 
       <div v-else class="empty-state">
         <v-icon size="32" color="border-light" class="mb-2">mdi-calendar-plus</v-icon>
-        <p class="empty-state-text">Vous n'avez pas encore créé d'annonce.</p>
-        <router-link to="/annonces/nouvelle" class="empty-state-cta">Créer ma première annonce</router-link>
+        <p class="empty-state-text">Vous n'avez pas encore créé de partie.</p>
+        <router-link to="/parties/nouvelle" class="empty-state-cta">Créer ma première partie</router-link>
       </div>
     </div>
 
@@ -644,7 +644,7 @@ function surfaceLabel(v) {
       <div v-else-if="receivedPrivate.length" class="proposals-list">
         <div v-for="p in receivedPrivate" :key="p.publicId" class="fin-card proposal-row">
           <div class="proposal-info">
-            <router-link :to="`/annonces/${p.publicId}`" class="proposal-link">
+            <router-link :to="`/parties/${p.publicId}`" class="proposal-link">
               <div class="proposal-title">{{ p.title }}</div>
             </router-link>
             <div class="proposal-meta">
@@ -690,7 +690,7 @@ function surfaceLabel(v) {
         </div>
         <h3 class="dialog-title">Supprimer mon compte</h3>
         <p class="dialog-text">
-          Votre profil, vos annonces et vos messages seront définitivement supprimés.<br>
+          Votre profil, vos parties et vos messages seront définitivement supprimés.<br>
           Cette action est <strong>irréversible</strong>.
         </p>
         <div class="dialog-confirm-field">

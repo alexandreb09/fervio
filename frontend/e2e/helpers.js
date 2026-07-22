@@ -79,7 +79,7 @@ export async function loginAs(page, user = MOCK_USER) {
  */
 export async function gotoProtected(page, targetUrl) {
   // Load a public page so Vue app + auth store initialize and fetchMe() can complete.
-  await page.goto('/annonces')
+  await page.goto('/parties')
   // Wait for the user menu to appear — proof that isLoggedIn is true.
   await page.locator('.user-menu-btn').waitFor({ timeout: 10_000 })
   // Client-side navigation via Vue Router (no full reload, guard passes with auth ready).

@@ -3,7 +3,7 @@ import { loginAs, gotoProtected, mockPublicApis, MOCK_USER, MOCK_PROPOSALS } fro
 
 // Tous les tests ici nécessitent une session authentifiée.
 // loginAs() doit être appelé avant page.goto() car il enregistre un init script.
-// gotoProtected() charge d'abord /annonces (non gardée), attend que fetchMe() soit
+// gotoProtected() charge d'abord /parties (non gardée), attend que fetchMe() soit
 // complète, puis navigue via Vue Router côté client vers la page protégée.
 
 // ── Page de profil (/profil) ──────────────────────────────────────────────────
@@ -39,16 +39,16 @@ test.describe('Page de profil (/profil)', () => {
     await expect(page.locator('button:has-text("Modifier le profil")')).toBeVisible()
   })
 
-  test('la section "Mes annonces" affiche l\'état vide quand l\'utilisateur n\'a pas d\'annonce', async ({ page }) => {
+  test('la section "Mes parties" affiche l\'état vide quand l\'utilisateur n\'a pas de partie', async ({ page }) => {
     await loginAs(page)
     await gotoProtected(page, '/profil')
 
-    await expect(page.locator('text=Vous n\'avez pas encore créé d\'annonce.')).toBeVisible()
+    await expect(page.locator('text=Vous n\'avez pas encore créé de partie.')).toBeVisible()
   })
 
-  test('la section "Mes annonces" liste les annonces existantes', async ({ page }) => {
+  test('la section "Mes parties" liste les parties existantes', async ({ page }) => {
     await loginAs(page)
-    // Override le catch-all pour les proposals : retourner des annonces
+    // Override le catch-all pour les proposals : retourner des parties
     await page.route(/\/api\/proposals/, (route) => {
       const url = route.request().url()
       if (route.request().method() !== 'GET') return route.fallback()
@@ -83,37 +83,37 @@ test.describe('Page de profil (/profil)', () => {
   })
 })
 
-// ── Bouton "Nouvelle annonce" (authentifié) ───────────────────────────────────
+// ── Bouton "Nouvelle partie" (authentifié) ───────────────────────────────────
 
-test.describe('Page des annonces (connecté)', () => {
-  test('affiche le bouton "Nouvelle annonce" pour un utilisateur connecté', async ({ page }) => {
+test.describe('Page des parties (connecté)', () => {
+  test('affiche le bouton "Nouvelle partie" pour un utilisateur connecté', async ({ page }) => {
     await loginAs(page)
     await mockPublicApis(page, { proposals: MOCK_PROPOSALS })
 
-    await page.goto('/annonces')
+    await page.goto('/parties')
     await page.locator('.user-menu-btn').waitFor()
 
-    await expect(page.locator('text=Nouvelle annonce').first()).toBeVisible()
+    await expect(page.locator('text=Nouvelle partie').first()).toBeVisible()
   })
 
-  test('le bouton "Nouvelle annonce" navigue vers /annonces/nouvelle', async ({ page }) => {
+  test('le bouton "Nouvelle partie" navigue vers /parties/nouvelle', async ({ page }) => {
     await loginAs(page)
     await mockPublicApis(page, { proposals: [] })
 
-    await page.goto('/annonces')
+    await page.goto('/parties')
     await page.locator('.user-menu-btn').waitFor()
-    await page.locator('.page-top a:has-text("Nouvelle annonce")').click()
+    await page.locator('.page-top a:has-text("Nouvelle partie")').click()
 
-    await expect(page).toHaveURL('/annonces/nouvelle')
+    await expect(page).toHaveURL('/parties/nouvelle')
   })
 })
 
-// ── Création d'une annonce (/annonces/nouvelle) ───────────────────────────────
+// ── Création d'une partie (/parties/nouvelle) ───────────────────────────────
 
-test.describe('Création d\'annonce (/annonces/nouvelle)', () => {
+test.describe('Création de partie (/parties/nouvelle)', () => {
   test('affiche le formulaire de création avec les 3 sections', async ({ page }) => {
     await loginAs(page)
-    await gotoProtected(page, '/annonces/nouvelle')
+    await gotoProtected(page, '/parties/nouvelle')
 
     await expect(page.locator('h1')).toContainText('Proposer une partie')
     await expect(page.locator('text=Informations générales')).toBeVisible()
@@ -121,9 +121,9 @@ test.describe('Création d\'annonce (/annonces/nouvelle)', () => {
     await expect(page.locator('text=Classement FFT requis')).toBeVisible()
   })
 
-  test('la soumission réussie redirige vers la page de détail de l\'annonce', async ({ page }) => {
+  test('la soumission réussie redirige vers la page de détail de la partie', async ({ page }) => {
     await loginAs(page)
-    // Mock de la création de l'annonce
+    // Mock de la création de la partie
     await page.route(/\/api\/proposals/, (route) => {
       if (route.request().method() === 'POST') {
         return route.fulfill({ json: { id: 99, title: 'Partie test' } })
@@ -131,7 +131,7 @@ test.describe('Création d\'annonce (/annonces/nouvelle)', () => {
       return route.fulfill({ json: [] })
     })
 
-    await gotoProtected(page, '/annonces/nouvelle')
+    await gotoProtected(page, '/parties/nouvelle')
 
     // Remplir les champs obligatoires via les inputs Vuetify
     const textFields = page.locator('.v-text-field input')
@@ -143,9 +143,9 @@ test.describe('Création d\'annonce (/annonces/nouvelle)', () => {
     tomorrow.setHours(10, 0, 0, 0)
     await textFields.nth(2).fill(tomorrow.toISOString().slice(0, 16))
 
-    await page.click('button:has-text("Publier l\'annonce")')
+    await page.click('button:has-text("Publier la partie")')
 
-    await expect(page).toHaveURL('/annonces/99')
+    await expect(page).toHaveURL('/parties/99')
   })
 
   test('une erreur de validation 422 affiche les messages sous les champs', async ({ page }) => {
@@ -160,11 +160,11 @@ test.describe('Création d\'annonce (/annonces/nouvelle)', () => {
       return route.fulfill({ json: [] })
     })
 
-    await gotoProtected(page, '/annonces/nouvelle')
-    await page.click('button:has-text("Publier l\'annonce")')
+    await gotoProtected(page, '/parties/nouvelle')
+    await page.click('button:has-text("Publier la partie")')
 
     await expect(page.locator('.v-messages__message').first()).toBeVisible()
-    await expect(page).toHaveURL('/annonces/nouvelle')
+    await expect(page).toHaveURL('/parties/nouvelle')
   })
 })
 

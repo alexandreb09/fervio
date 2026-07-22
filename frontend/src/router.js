@@ -4,7 +4,7 @@ import { FAQ_ITEMS } from '@/data/faq'
 
 const SITE_URL = 'https://fervio.fr'
 const DEFAULT_TITLE = 'Fervio — Trouvez votre partenaire de tennis en France'
-const DEFAULT_DESCRIPTION = 'Fervio, la plateforme gratuite pour trouver un partenaire de tennis près de chez vous. Publiez une annonce de partie, rejoignez des joueurs de votre niveau et progressez ensemble.'
+const DEFAULT_DESCRIPTION = 'Fervio, la plateforme gratuite pour trouver un partenaire de tennis près de chez vous. Publiez une partie, rejoignez des joueurs de votre niveau et progressez ensemble.'
 
 function breadcrumbJsonLd(items) {
   return {
@@ -66,37 +66,37 @@ export const routes = [
     },
   },
   {
-    path: '/annonces',
+    path: '/parties',
     component: () => import('@/views/ProposalsView.vue'),
     meta: {
-      title: 'Annonces de parties',
-      description: 'Annonces de parties de tennis disponibles partout en France. Rejoignez une partie ou publiez votre annonce pour trouver un partenaire de tennis.',
+      title: 'Parties de tennis',
+      description: 'Parties de tennis disponibles partout en France. Rejoignez une partie ou publiez la vôtre pour trouver un partenaire de tennis.',
       jsonLd: () => ({
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: 'Annonces de parties de tennis sur Fervio',
-        description: 'Annonces de parties de tennis disponibles partout en France.',
-        url: `${SITE_URL}/annonces`,
+        name: 'Parties de tennis sur Fervio',
+        description: 'Parties de tennis disponibles partout en France.',
+        url: `${SITE_URL}/parties`,
       }),
     },
   },
   {
-    path: '/annonces/nouvelle',
+    path: '/parties/nouvelle',
     component: () => import('@/views/CreateProposalView.vue'),
     meta: {
-      title: 'Nouvelle annonce',
+      title: 'Nouvelle partie',
       requiresAuth: true,
     },
   },
   {
-    path: '/annonces/:id',
+    path: '/parties/:id',
     component: () => import('@/views/ProposalDetailView.vue'),
     meta: {
       title: 'Détail de la partie',
       description: 'Rejoignez cette partie de tennis ou contactez l\'organisateur. Fervio — trouvez votre partenaire de tennis.',
       jsonLd: (to) => breadcrumbJsonLd([
         ['Accueil', '/'],
-        ['Annonces', '/annonces'],
+        ['Parties', '/parties'],
         ['Détail de la partie', to.path],
       ]),
     },
@@ -121,7 +121,7 @@ export const routes = [
     component: () => import('@/views/LoginView.vue'),
     meta: {
       title: 'Connexion',
-      description: 'Connectez-vous à Fervio pour accéder à votre espace partenaire de tennis et retrouver vos annonces et messages.',
+      description: 'Connectez-vous à Fervio pour accéder à votre espace partenaire de tennis et retrouver vos parties et messages.',
     },
   },
   {

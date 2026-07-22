@@ -235,14 +235,14 @@ function proposalMonth(d) {
       <!-- Player's proposals -->
       <template v-if="playerProposals.length">
         <div class="proposals-header">
-          <h2 class="proposals-title">Annonces de {{ player.firstName }}</h2>
+          <h2 class="proposals-title">Parties de {{ player.firstName }}</h2>
           <span class="proposals-count">{{ playerProposals.length }}</span>
         </div>
         <div class="proposals-list">
           <router-link
             v-for="p in playerProposals"
             :key="p.publicId"
-            :to="`/annonces/${p.publicId}`"
+            :to="`/parties/${p.publicId}`"
             class="fin-card proposal-row"
           >
             <div class="proposal-date">

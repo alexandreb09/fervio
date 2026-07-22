@@ -75,7 +75,7 @@ function avatarUrl(u) {
           Trouvez votre<br>partenaire<br>de tennis
         </h1>
         <p class="hero-subtitle">
-          Rejoignez des joueurs de votre niveau près de chez vous. Publiez une annonce, rejoignez une partie, progressez
+          Rejoignez des joueurs de votre niveau près de chez vous. Publiez une partie, rejoignez-en une, progressez
           ensemble.
         </p>
 
@@ -91,7 +91,7 @@ function avatarUrl(u) {
           <router-link to="/joueurs" class="hero-cta-link">
             <v-icon size="13">mdi-account-group-outline</v-icon> Voir les joueurs
           </router-link>
-          <router-link to="/annonces" class="hero-cta-link">
+          <router-link to="/parties" class="hero-cta-link">
             <v-icon size="13">mdi-calendar-search-outline</v-icon> Voir les parties
           </router-link>
         </div>
@@ -114,18 +114,18 @@ function avatarUrl(u) {
     </section>
 
     <div class="page">
-      <!-- ── Annonces récentes ── -->
+      <!-- ── Parties récentes ── -->
       <section class="home-section">
         <div class="section-header">
           <div>
-            <p class="fin-label section-header-label">Dernières annonces</p>
+            <p class="fin-label section-header-label">Dernières parties</p>
             <h2 class="section-title">Parties disponibles</h2>
           </div>
-          <router-link to="/annonces" class="section-see-all">Tout voir →</router-link>
+          <router-link to="/parties" class="section-see-all">Tout voir →</router-link>
         </div>
 
         <div v-if="!loading" class="proposals-grid">
-          <router-link v-for="p in recentProposals" :key="p.publicId" :to="`/annonces/${p.publicId}`"
+          <router-link v-for="p in recentProposals" :key="p.publicId" :to="`/parties/${p.publicId}`"
             class="fin-card proposal-card">
             <div class="proposal-card-top">
               <span :class="p.status === 'full' ? 'badge badge-amber' : 'badge badge-green'">
@@ -146,7 +146,7 @@ function avatarUrl(u) {
             </div>
           </router-link>
           <div v-if="recentProposals.length === 0" class="empty-grid-msg">
-            Aucune annonce disponible pour le moment.
+            Aucune partie disponible pour le moment.
           </div>
         </div>
         <div v-else class="proposals-grid">

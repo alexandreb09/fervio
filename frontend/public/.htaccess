@@ -9,6 +9,11 @@ RewriteRule ^ https://fervio.fr%{REQUEST_URI} [L,R=301]
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# 301 : migration /annonces → /parties (SEO)
+RewriteRule ^annonces/nouvelle/?$ /parties/nouvelle [L,R=301]
+RewriteRule ^annonces/([0-9]+)/?$ /parties/$1 [L,R=301]
+RewriteRule ^annonces/?$ /parties [L,R=301,QSA]
+
 # Sert les fichiers existants directement
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

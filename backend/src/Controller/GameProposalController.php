@@ -24,14 +24,21 @@ class GameProposalController extends AbstractController
     #[Route('', name: 'api_proposals_list', methods: ['GET'])]
     public function list(Request $request, GameProposalRepository $repo, NormalizerInterface $normalizer): JsonResponse
     {
+        $authorId = $request->query->getInt('authorId') ?: null;
+
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+        $includePrivate = $authorId !== null && $currentUser !== null && $currentUser->getId() === $authorId;
+
         $proposals = $repo->findByFilters(
             $request->query->get('city'),
             $request->query->get('surface'),
             $request->query->get('gameType'),
             $request->query->get('status'),
-            $request->query->getInt('authorId') ?: null,
+            $authorId,
             $request->query->get('department'),
-            $request->query->getBoolean('includePast')
+            $request->query->getBoolean('includePast'),
+            $includePrivate
         );
 
         return $this->json($normalizer->normalize($proposals, null, ['groups' => ['proposal:list']]));
@@ -86,7 +93,7 @@ class GameProposalController extends AbstractController
         }
 
         if ($repo->countActiveByAuthor($user) >= 3) {
-            return $this->json(['error' => 'Vous ne pouvez pas avoir plus de 3 annonces actives simultanément.'], 400);
+            return $this->json(['error' => 'Vous ne pouvez pas avoir plus de 3 parties actives simultanément.'], 400);
         }
 
         $proposal = new GameProposal();
@@ -186,10 +193,10 @@ class GameProposalController extends AbstractController
         $user = $this->getUser();
 
         if ($proposal->getAuthor()->getId() === $user->getId()) {
-            return $this->json(['error' => "Vous êtes l'auteur de cette annonce"], 400);
+            return $this->json(['error' => "Vous êtes l'auteur de cette partie"], 400);
         }
         if ($proposal->getStatus() !== 'open') {
-            return $this->json(['error' => "Cette annonce n'est plus ouverte"], 400);
+            return $this->json(['error' => "Cette partie n'est plus ouverte"], 400);
         }
         if ($proposal->isFull()) {
             return $this->json(['error' => 'Cette partie est complète'], 400);
@@ -216,15 +223,15 @@ class GameProposalController extends AbstractController
         $author = $proposal->getAuthor();
         if ($author->isNotifyProposalReplies()) {
             $joiner     = $user->getFirstName() . ($user->getLastName() ? ' ' . $user->getLastName() : '');
-            $proposalUrl = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/') . '/annonces/' . $proposal->getPublicId();
+            $proposalUrl = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/') . '/parties/' . $proposal->getPublicId();
 
             $body = '<p style="margin:0 0 16px;font-size:15px;color:#78604E;line-height:1.6;">'
-                . htmlspecialchars($joiner, ENT_QUOTES) . ' vient de rejoindre votre annonce :'
+                . htmlspecialchars($joiner, ENT_QUOTES) . ' vient de rejoindre votre partie :'
                 . '</p>'
                 . '<p style="margin:0 0 24px;font-size:15px;font-weight:700;color:#3D2A20;">'
                 . htmlspecialchars($proposal->getTitle(), ENT_QUOTES)
                 . '</p>'
-                . FervioEmail::button($proposalUrl, 'Voir l\'annonce')
+                . FervioEmail::button($proposalUrl, 'Voir la partie')
                 . FervioEmail::fallbackLink($proposalUrl);
 
             try {

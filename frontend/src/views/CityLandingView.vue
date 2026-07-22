@@ -65,25 +65,25 @@ function avatarUrl(u) {
 
       <p class="city-desc">
         Fervio vous permet de trouver gratuitement un partenaire de tennis à {{ city.name }}, quel que soit votre niveau.
-        Filtrez les joueurs par classement FFT, rejoignez une partie de simple, double ou double mixte, ou publiez votre propre annonce pour organiser une rencontre.
+        Filtrez les joueurs par classement FFT, rejoignez une partie de simple, double ou double mixte, ou publiez la vôtre pour organiser une rencontre.
       </p>
 
       <div class="city-cta-row">
         <router-link :to="`/joueurs?city=${city.name}`" class="btn-primary">Voir les joueurs à {{ city.name }}</router-link>
-        <router-link :to="`/annonces?city=${city.name}`" class="btn-secondary">Voir les parties à {{ city.name }}</router-link>
+        <router-link :to="`/parties?city=${city.name}`" class="btn-secondary">Voir les parties à {{ city.name }}</router-link>
       </div>
     </header>
 
     <section v-if="!loading && proposals.length" class="home-section">
       <div class="section-header">
         <h2 class="section-title">Parties disponibles à {{ city.name }}</h2>
-        <router-link :to="`/annonces?city=${city.name}`" class="section-see-all">Tout voir →</router-link>
+        <router-link :to="`/parties?city=${city.name}`" class="section-see-all">Tout voir →</router-link>
       </div>
       <div class="city-grid">
         <router-link
           v-for="p in proposals.slice(0, 4)"
           :key="p.publicId"
-          :to="`/annonces/${p.publicId}`"
+          :to="`/parties/${p.publicId}`"
           class="fin-card city-card"
         >
           <span :class="p.status === 'full' ? 'badge badge-amber' : 'badge badge-green'">

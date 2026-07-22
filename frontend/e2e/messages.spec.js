@@ -65,7 +65,7 @@ test.describe('Conversation (/messages/2)', () => {
 
     await gotoProtected(page, '/messages/2')
     await expect(page.locator('.msg-bubble--other').first()).toContainText(
-      'Bonjour, je suis intéressé par votre annonce !'
+      'Bonjour, je suis intéressé par votre partie !'
     )
     await expect(page.locator('.msg-bubble--mine').first()).toContainText(
       'Bonjour Bob, avec plaisir !'

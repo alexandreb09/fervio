@@ -64,7 +64,7 @@ async function submit() {
   globalError.value = ''
   try {
     const res = await api.post('/proposals', form.value)
-    router.push(`/annonces/${res.data.publicId}`)
+    router.push(`/parties/${res.data.publicId}`)
   } catch (e) {
     if (e.response?.status === 422) {
       errors.value = e.response.data.errors || {}
@@ -81,9 +81,9 @@ async function submit() {
   <div class="page-sm">
     <!-- Header -->
     <div class="mb-6">
-      <p class="fin-label" style="margin:0 0 4px;">Nouvelle annonce</p>
+      <p class="fin-label" style="margin:0 0 4px;">Nouvelle partie</p>
       <h1 class="create-page-title">Proposer une partie</h1>
-      <p class="create-page-subtitle">Créez une annonce pour trouver des partenaires près de chez vous</p>
+      <p class="create-page-subtitle">Créez une partie pour trouver des partenaires près de chez vous</p>
     </div>
 
     <v-alert
@@ -107,7 +107,7 @@ async function submit() {
 
         <v-text-field
           v-model="form.title"
-          label="Titre de l'annonce *"
+          label="Titre de la partie *"
           placeholder="Ex : Partie de simple samedi matin à Paris 15e"
           :error-messages="errors.title"
           hide-details="auto"
@@ -268,7 +268,7 @@ async function submit() {
       <div class="form-actions">
         <button type="submit" :disabled="loading" class="btn-primary">
           <v-progress-circular v-if="loading" size="14" width="2" color="white" indeterminate />
-          Publier l'annonce
+          Publier la partie
         </button>
         <button type="button" class="btn-secondary" @click="router.back()">Annuler</button>
       </div>

@@ -16,7 +16,7 @@
       <h2>Un partenaire de tennis, gratuitement</h2>
       <p>
         Fervio est 100 % gratuit, sans abonnement caché ni publicité intrusive: créer un profil, consulter l'annuaire
-        des joueurs, publier ou rejoindre une annonce de partie et échanger par messagerie ne coûtent rien.
+        des joueurs, publier ou rejoindre une partie et échanger par messagerie ne coûtent rien.
         Notre objectif est de rendre la recherche d'un partenaire raquette accessible à tous les joueurs, débutants
         comme confirmés.
       </p>
@@ -55,7 +55,7 @@
     <section class="about-section">
       <h2>Une communauté modérée</h2>
       <p>
-        Chaque profil et chaque annonce peut être signalé en un clic. Notre équipe modère activement la communauté pour
+        Chaque profil et chaque partie peut être signalé en un clic. Notre équipe modère activement la communauté pour
         que chercher un partenaire de tennis
         reste une expérience sûre et agréable, et le site continue d'évoluer au fil des retours des joueurs.
       </p>

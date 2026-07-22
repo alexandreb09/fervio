@@ -14,7 +14,7 @@ class GameProposalRepository extends ServiceEntityRepository
         parent::__construct($registry, GameProposal::class);
     }
 
-    public function findByFilters(?string $city, ?string $surface, ?string $gameType, ?string $status, ?int $authorId = null, ?string $department = null, bool $includePast = false): array
+    public function findByFilters(?string $city, ?string $surface, ?string $gameType, ?string $status, ?int $authorId = null, ?string $department = null, bool $includePast = false, bool $includePrivate = false): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.author', 'u')->addSelect('u')
@@ -35,6 +35,9 @@ class GameProposalRepository extends ServiceEntityRepository
         }
         if ($authorId) {
             $qb->andWhere('u.id = :authorId')->setParameter('authorId', $authorId);
+            if (!$includePrivate) {
+                $qb->andWhere('p.isPrivate = false');
+            }
         } else {
             $qb->andWhere('p.isPrivate = false');
         }

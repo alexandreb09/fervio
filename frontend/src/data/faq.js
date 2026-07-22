@@ -6,7 +6,7 @@ export const FAQ_ITEMS = [
   },
   {
     question: 'Fervio est-il vraiment gratuit ?',
-    answer: 'Oui, Fervio est 100 % gratuit : créer un profil, contacter des joueurs, publier ou rejoindre une annonce de partie ne coûte rien, sans abonnement caché.',
+    answer: 'Oui, Fervio est 100 % gratuit : créer un profil, contacter des joueurs, publier ou rejoindre une partie ne coûte rien, sans abonnement caché.',
   },
   {
     question: 'Comment fonctionne le classement FFT sur Fervio ?',
@@ -14,7 +14,7 @@ export const FAQ_ITEMS = [
   },
   {
     question: 'Puis-je organiser un double ou un double mixte ?',
-    answer: 'Oui, en publiant une annonce vous choisissez le type de partie (simple, double ou double mixte) ainsi que le nombre de joueurs recherchés.',
+    answer: 'Oui, en publiant une partie vous choisissez son type (simple, double ou double mixte) ainsi que le nombre de joueurs recherchés.',
   },
   {
     question: 'Comment contacter un partenaire de tennis trouvé sur Fervio ?',
@@ -22,10 +22,10 @@ export const FAQ_ITEMS = [
   },
   {
     question: 'Puis-je trouver un partenaire de tennis pendant mes vacances ?',
-    answer: 'Oui ! Fervio est idéal pour trouver un partenaire de tennis en vacances. Recherchez des joueurs ou des parties dans la ville de votre séjour — Côte d\'Azur, Bretagne, Alpes, Pyrénées… Publiez votre propre annonce pour indiquer vos disponibilités sur place et rencontrez des joueurs locaux.',
+    answer: 'Oui ! Fervio est idéal pour trouver un partenaire de tennis en vacances. Recherchez des joueurs ou des parties dans la ville de votre séjour — Côte d\'Azur, Bretagne, Alpes, Pyrénées… Publiez votre propre partie pour indiquer vos disponibilités sur place et rencontrez des joueurs locaux.',
   },
   {
     question: 'Que faire si un joueur a un comportement inapproprié ?',
-    answer: 'Chaque profil et chaque annonce peut être signalé via le bouton de signalement ; notre équipe modère la communauté pour garantir un espace sûr.',
+    answer: 'Chaque profil et chaque partie peut être signalé via le bouton de signalement ; notre équipe modère la communauté pour garantir un espace sûr.',
   },
 ]
