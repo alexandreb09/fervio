@@ -109,7 +109,7 @@ function initForms() {
 onMounted(() => {
   initForms()
 
-  api.get('/proposals', { params: { authorId: user.value?.id } })
+  api.get('/proposals', { params: { authorId: user.value?.id, status: 'all', includePast: true } })
     .then(res => { proposals.value = res.data })
     .finally(() => { loadingProposals.value = false })
 

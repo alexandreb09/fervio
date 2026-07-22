@@ -14,7 +14,7 @@ class GameProposalRepository extends ServiceEntityRepository
         parent::__construct($registry, GameProposal::class);
     }
 
-    public function findByFilters(?string $city, ?string $surface, ?string $gameType, ?string $status, ?int $authorId = null, ?string $department = null): array
+    public function findByFilters(?string $city, ?string $surface, ?string $gameType, ?string $status, ?int $authorId = null, ?string $department = null, bool $includePast = false): array
     {
         $qb = $this->createQueryBuilder('p')
             ->leftJoin('p.author', 'u')->addSelect('u')
@@ -39,9 +39,16 @@ class GameProposalRepository extends ServiceEntityRepository
             $qb->andWhere('p.isPrivate = false');
         }
 
-        $qb->andWhere('p.status IN (:statuses)')
-           ->setParameter('statuses', $status === 'all' ? ['open', 'full', 'closed'] : [$status ?? 'open']);
-        $qb->andWhere('p.scheduledAt >= :now')->setParameter('now', new \DateTime());
+        $statuses = match (true) {
+            $status === 'all' => ['open', 'full', 'closed'],
+            !$status => ['open', 'full'],
+            default => [$status],
+        };
+        $qb->andWhere('p.status IN (:statuses)')->setParameter('statuses', $statuses);
+
+        if (!$includePast) {
+            $qb->andWhere('p.scheduledAt >= :now')->setParameter('now', new \DateTime());
+        }
 
         return $qb->orderBy('p.scheduledAt', 'ASC')->getQuery()->getResult();
     }

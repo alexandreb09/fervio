@@ -28,9 +28,10 @@ class GameProposalController extends AbstractController
             $request->query->get('city'),
             $request->query->get('surface'),
             $request->query->get('gameType'),
-            $request->query->get('status', 'open'),
+            $request->query->get('status'),
             $request->query->getInt('authorId') ?: null,
-            $request->query->get('department')
+            $request->query->get('department'),
+            $request->query->getBoolean('includePast')
         );
 
         return $this->json($normalizer->normalize($proposals, null, ['groups' => ['proposal:list']]));
