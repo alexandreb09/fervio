@@ -97,4 +97,17 @@ class GameProposalRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function countOpenFuture(): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.isPrivate = false')
+            ->andWhere('p.status IN (:statuses)')
+            ->andWhere('p.scheduledAt >= :now')
+            ->setParameter('statuses', ['open', 'full'])
+            ->setParameter('now', new \DateTime())
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

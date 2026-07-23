@@ -25,7 +25,8 @@ class UserController extends AbstractController
             $request->query->get('minRanking'),
             $request->query->get('maxRanking'),
             $request->query->get('gender'),
-            $request->query->get('department')
+            $request->query->get('department'),
+            $request->query->get('sort')
         );
 
         return $this->json($normalizer->normalize($users, null, ['groups' => ['user:list']]));

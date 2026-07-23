@@ -26,6 +26,14 @@ export const routes = [
     meta: {
       title: 'Accueil',
       description: DEFAULT_DESCRIPTION,
+    },
+  },
+  {
+    path: '/faq',
+    component: () => import('@/views/FaqView.vue'),
+    meta: {
+      title: 'FAQ',
+      description: 'Toutes les réponses à vos questions sur Fervio : gratuité, classement FFT, messagerie, modération et plus encore.',
       jsonLd: () => ({
         '@context': 'https://schema.org',
         '@type': 'FAQPage',

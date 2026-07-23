@@ -32,7 +32,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         '4/6', '3/6', '2/6', '1/6', '0', '-2/6', '-4/6', '-15', '-30',
     ];
 
-    public function findByFilters(?string $city, ?string $minRanking, ?string $maxRanking, ?string $gender, ?string $department = null): array
+    public function findByFilters(?string $city, ?string $minRanking, ?string $maxRanking, ?string $gender, ?string $department = null, ?string $sort = null): array
     {
         $qb = $this->createQueryBuilder('u');
 
@@ -55,7 +55,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         $qb->andWhere('u.isSuspended = false');
 
-        return $qb->orderBy('u.lastActivityAt', 'DESC')->getQuery()->getResult();
+        $orderField = $sort === 'createdAt' ? 'u.createdAt' : 'u.lastActivityAt';
+
+        return $qb->orderBy($orderField, 'DESC')->getQuery()->getResult();
     }
 
     public function findDistinctCities(): array
@@ -70,5 +72,14 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
                 ->getArrayResult(),
             'city'
         );
+    }
+
+    public function countActive(): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.isSuspended = false')
+            ->getQuery()
+            ->getSingleScalarResult();
     }
 }

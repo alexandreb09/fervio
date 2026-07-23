@@ -290,6 +290,7 @@ watch(isLoggedIn, (val) => {
           <router-link to="/joueurs" class="footer-link">Joueurs</router-link>
           <router-link to="/parties" class="footer-link">Parties</router-link>
           <router-link to="/pourquoi-fervio" class="footer-link">Pourquoi Fervio</router-link>
+          <router-link to="/faq" class="footer-link">FAQ</router-link>
         </div>
       </div>
     </footer>

@@ -3,27 +3,54 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api'
 import { STORAGE_BASE } from '@/utils/avatar'
-import { CITIES } from '@/data/cities'
-import { FAQ_ITEMS } from '@/data/faq'
 import CityInput from '@/components/CityInput.vue'
 
 const router = useRouter()
-const popularCities = CITIES.slice(0, 8)
 const search = ref('')
 const recentProposals = ref([])
 const recentPlayers = ref([])
 const loading = ref(true)
+const statsDisplay = ref({ players: 0, proposals: 0, cities: 0 })
 
 const surfaceLabels = { terre_battue: 'Terre battue', gazon: 'Gazon', dur: 'Dur', synthetique: 'Synthétique', indoor: 'Indoor' }
 const gameTypeLabels = { simple: 'Simple', double: 'Double', double_mixte: 'Double mixte' }
 
-onMounted(async () => {
+onMounted(() => {
+  loadHome()
+  loadStats()
+})
+
+async function loadHome() {
   try {
-    const [props, players] = await Promise.all([api.get('/proposals?status=open'), api.get('/users')])
+    const [props, players] = await Promise.all([api.get('/proposals?status=open'), api.get('/users?sort=createdAt')])
     recentProposals.value = props.data.slice(0, 4)
     recentPlayers.value = players.data.slice(0, 6)
   } finally { loading.value = false }
-})
+}
+
+async function loadStats() {
+  try {
+    const { data } = await api.get('/stats')
+    animateStats(data)
+  } catch { /* décoratif, on laisse les compteurs à 0 en cas d'échec */ }
+}
+
+function animateStats(target) {
+  const duration = 900
+  const start = performance.now()
+  const from = { ...statsDisplay.value }
+  function tick(now) {
+    const progress = Math.min((now - start) / duration, 1)
+    const eased = 1 - Math.pow(1 - progress, 3)
+    statsDisplay.value = {
+      players: Math.round(from.players + (target.players - from.players) * eased),
+      proposals: Math.round(from.proposals + (target.proposals - from.proposals) * eased),
+      cities: Math.round(from.cities + (target.cities - from.cities) * eased),
+    }
+    if (progress < 1) requestAnimationFrame(tick)
+  }
+  requestAnimationFrame(tick)
+}
 
 function doSearch() {
   if (search.value.trim()) router.push(`/joueurs?city=${encodeURIComponent(search.value.trim())}`)
@@ -65,18 +92,24 @@ function avatarUrl(u) {
       <div class="hero-ball" aria-hidden="true">
         <span class="mdi mdi-tennis-ball"></span>
       </div>
+      <!-- Watermark raquette -->
+      <div class="hero-racket" aria-hidden="true">
+        <span class="mdi mdi-tennis"></span>
+      </div>
 
       <div class="hero-inner">
-        <span class="hero-label">
-          <span class="mdi mdi-tennis-ball" style="font-size:12px;opacity:.8"></span>
-          Partenaire raquette · Gratuit · France
-        </span>
+        <div class="hero-badges">
+          <span class="hero-label">
+            <span class="mdi mdi-tennis-ball hero-label-icon"></span>
+            Partenaires raquette · France
+          </span>
+          <span class="hero-label hero-label--free">GRATUIT</span>
+        </div>
         <h1 class="hero-title">
-          Trouvez votre<br>partenaire<br>de tennis
+          Chaque envie de tennis<br>mérite un partenaire
         </h1>
         <p class="hero-subtitle">
-          Rejoignez des joueurs de votre niveau près de chez vous. Publiez une partie, rejoignez-en une, progressez
-          ensemble.
+          Partout en France, des joueurs vous attendent.
         </p>
 
         <!-- Search -->
@@ -88,11 +121,11 @@ function avatarUrl(u) {
         </div>
 
         <div class="hero-cta-row">
-          <router-link to="/joueurs" class="hero-cta-link">
-            <v-icon size="13">mdi-account-group-outline</v-icon> Voir les joueurs
+          <router-link to="/joueurs" class="hero-cta-btn">
+            <v-icon size="16">mdi-account-search-outline</v-icon> Trouver un partenaire
           </router-link>
-          <router-link to="/parties" class="hero-cta-link">
-            <v-icon size="13">mdi-calendar-search-outline</v-icon> Voir les parties
+          <router-link to="/parties" class="hero-cta-btn">
+            <v-icon size="16">mdi-calendar-search-outline</v-icon> Trouver une partie
           </router-link>
         </div>
       </div>
@@ -102,9 +135,9 @@ function avatarUrl(u) {
     <section class="stats-section">
       <div class="stats-inner">
         <div v-for="stat in [
-          { n: '100%', label: 'Gratuit', icon: 'mdi-gift-outline' },
-          { n: recentPlayers.length + '+', label: 'Joueurs inscrits', icon: 'mdi-account-group-outline' },
-          { n: recentProposals.length + '+', label: 'Parties disponibles', icon: 'mdi-calendar-check-outline' },
+          { n: statsDisplay.players, label: 'Joueurs inscrits', icon: 'mdi-account-group-outline' },
+          { n: statsDisplay.proposals, label: 'Parties proposées', icon: 'mdi-calendar-check-outline' },
+          { n: statsDisplay.cities, label: 'Villes concernées', icon: 'mdi-map-marker-outline' },
         ]" :key="stat.label" class="fin-stat stat-item">
           <v-icon :icon="stat.icon" color="primary" size="20" class="mb-1" />
           <div class="stat-number">{{ stat.n }}</div>
@@ -159,7 +192,7 @@ function avatarUrl(u) {
         <div class="section-header">
           <div>
             <p class="fin-label section-header-label">Communauté</p>
-            <h2 class="section-title">Joueurs disponibles</h2>
+            <h2 class="section-title">Derniers joueurs inscrits</h2>
           </div>
           <router-link to="/joueurs" class="section-see-all">Tout voir →</router-link>
         </div>
@@ -180,95 +213,40 @@ function avatarUrl(u) {
         </div>
       </section>
 
-      <!-- ── Comment ça marche ── -->
-      <section class="how-section">
-        <div class="how-header">
-          <p class="fin-label">Simple &amp; rapide</p>
-          <h2 class="how-title">Comment ça marche ?</h2>
-        </div>
-        <div class="how-grid">
-          <div v-for="(step, i) in [
-            { icon: 'mdi-account-plus-outline', title: 'Créez votre profil', desc: 'Inscrivez-vous gratuitement et renseignez votre classement FFT.' },
-            { icon: 'mdi-magnify', title: 'Trouvez un partenaire raquette', desc: 'Recherchez un partenaire de tennis par ville, classement FFT ou type de jeu — simple, double ou mixte.' },
-            { icon: 'mdi-message-outline', title: 'Jouez ensemble', desc: 'Contactez les joueurs, organisez vos parties et progressez.' },
-          ]" :key="i" class="how-step">
-            <div class="how-step-icon">
-              <v-icon :icon="step.icon" color="primary" size="18" />
-            </div>
-            <div class="how-step-number">Étape {{ i + 1 }}</div>
-            <div class="how-step-title">{{ step.title }}</div>
-            <div class="how-step-desc">{{ step.desc }}</div>
-          </div>
-        </div>
-        <div class="how-cta">
-          <router-link to="/inscription" class="btn-primary">
-            Rejoindre gratuitement →
-          </router-link>
-        </div>
-      </section>
-
       <!-- ── Services proposés ── -->
       <section class="home-section services-section">
-        <div class="services-card">
-          <div class="services-header">
+        <div class="section-header">
+          <div>
             <p class="fin-label section-header-label">Services proposés</p>
             <h2 class="section-title">Jouez au tennis quand et où vous voulez</h2>
           </div>
-          <div class="services-body">
-            <p class="services-text">
-              Fervio vous donne la possibilité de contacter un joueur inscrit, en fonction de sa ville et/ou de son
-              classement FFT.
-            </p>
-            <p class="services-text">
-              Le site permet également de proposer des créneaux pour des parties futures. Ces propositions de jeu sont
-              visibles sans inscription.
-            </p>
-            <div class="services-notes">
-              <p class="services-note">
-                <v-icon size="13" color="text-subtle">mdi-lightbulb-outline</v-icon>
-                Par exemple, un joueur peut programmer des parties ou rechercher un partenaire de tennis sur son lieu
-                de vacances à venir — Côte d'Azur, Bretagne, Alpes…
-              </p>
-              <p class="services-note">
-                <v-icon size="13" color="text-subtle">mdi-lightbulb-outline</v-icon>
-                Par exemple, un joueur peut programmer des séances d'entrainement assidues pour le mois à venir.
-              </p>
+        </div>
+        <div class="services-grid">
+          <div v-for="(service, i) in [
+            { icon: 'mdi-trophy-outline', title: 'Préparez un tournoi', desc: 'Programmez des séances d\'entraînement régulières avec un ou plusieurs partenaires au classement adapté.' },
+            { icon: 'mdi-bag-suitcase-outline', title: 'Préparez vos vacances', desc: 'Contactez des partenaires sur votre futur lieu de séjour — Côte d\'Azur, Bretagne, Alpes…' },
+            { icon: 'mdi-map-marker-outline', title: 'Trouvez un joueur près de chez vous', desc: 'Recherchez des partenaires dans votre ville et les communes voisines.' },
+            { icon: 'mdi-clock-fast', title: 'Trouvez un partenaire à la dernière minute', desc: 'Consultez les parties proposées pour jouer dès aujourd\'hui.' },
+          ]" :key="i" class="service-item">
+            <div class="service-item-icon">
+              <v-icon :icon="service.icon" color="primary" size="18" />
             </div>
+            <div class="service-item-title">{{ service.title }}</div>
+            <div class="service-item-desc">{{ service.desc }}</div>
           </div>
         </div>
       </section>
 
-      <!-- ── Villes populaires ── -->
-      <section class="home-section cities-section">
-        <div class="section-header">
-          <div>
-            <p class="fin-label section-header-label">Partout en France</p>
-            <h2 class="section-title">Partenaire de tennis par ville</h2>
-          </div>
-        </div>
-        <div class="cities-row">
-          <router-link v-for="c in popularCities" :key="c.slug" :to="`/partenaire-tennis/${c.slug}`" class="city-chip">
-            {{ c.name }}
-          </router-link>
-          <span class="city-chip city-chip--more">et bien d'autres…</span>
+      <!-- ── Rejoignez-nous ── -->
+      <section class="home-section cta-section">
+        <div class="cta-card">
+          <p class="fin-label">Rejoignez-nous</p>
+          <h2 class="cta-title">Enrichissez la communauté !</h2>
+          <p class="cta-text">Chaque nouveau joueur enrichit la communauté et multiplie les possibilités de jeu.</p>
+          <router-link to="/inscription" class="cta-btn">S'inscrire →</router-link>
         </div>
       </section>
 
-      <!-- ── FAQ ── -->
-      <section class="home-section faq-section">
-        <div class="section-header">
-          <div>
-            <p class="fin-label section-header-label">Questions fréquentes</p>
-            <h2 class="section-title">Tout savoir sur Fervio</h2>
-          </div>
-        </div>
-        <div class="faq-list">
-          <details v-for="item in FAQ_ITEMS" :key="item.question" class="faq-item">
-            <summary class="faq-question">{{ item.question }}</summary>
-            <p class="faq-answer">{{ item.answer }}</p>
-          </details>
-        </div>
-      </section>
     </div>
   </div>
 </template>
@@ -310,6 +288,23 @@ function avatarUrl(u) {
   display: block;
 }
 
+/* Racket watermark */
+.hero-racket {
+  position: absolute;
+  left: -100px;
+  bottom: -140px;
+  pointer-events: none;
+  opacity: 0.055;
+  line-height: 1;
+  transform: rotate(-18deg);
+}
+
+.hero-racket .mdi {
+  font-size: 420px;
+  color: #fff;
+  display: block;
+}
+
 .hero-inner {
   max-width: 680px;
   margin: 0 auto;
@@ -318,11 +313,18 @@ function avatarUrl(u) {
   z-index: 1;
 }
 
+.hero-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
 .hero-label {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin-bottom: 22px;
   background: rgba(255, 255, 255, .1);
   border: 1px solid rgba(255, 255, 255, .18);
   border-radius: 999px;
@@ -332,6 +334,18 @@ function avatarUrl(u) {
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, .8);
+}
+
+.hero-label-icon {
+  font-size: 12px;
+  opacity: .8;
+}
+
+.hero-label--free {
+  background: #E11D2E;
+  border-color: #E11D2E;
+  color: #fff;
+  padding: 5px 14px;
 }
 
 .hero-title {
@@ -369,6 +383,19 @@ function avatarUrl(u) {
 
 .hero-search :deep(.city-wrap) {
   flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .hero-search {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    border-radius: 16px;
+  }
+
+  .hero-search-btn {
+    flex: 1 1 100%;
+  }
 }
 
 .hero-search-input {
@@ -414,26 +441,25 @@ function avatarUrl(u) {
   flex-wrap: wrap;
 }
 
-.hero-cta-link {
+.hero-cta-btn {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, .72);
-  padding: 8px 16px;
-  border: 1px solid rgba(255, 255, 255, .2);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, .07);
-  backdrop-filter: blur(4px);
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7A2E12;
+  padding: 12px 22px;
+  border: 1px solid #fff;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
   transition: all 0.12s;
 }
 
-.hero-cta-link:hover {
-  background: rgba(255, 255, 255, .15);
-  color: #fff;
-  border-color: rgba(255, 255, 255, .35);
+.hero-cta-btn:hover {
+  background: #F5E8DC;
+  border-color: #F5E8DC;
 }
 
 /* ── Stats ── */
@@ -608,55 +634,27 @@ function avatarUrl(u) {
   margin-bottom: 8px;
 }
 
-/* ── How it works ── */
-.how-section {
-  background: var(--c-bg);
-  border: 1px solid var(--c-border);
-  border-radius: 16px;
-  padding: 40px 36px;
-  margin-bottom: 56px;
-}
-
-.how-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.how-title {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  color: var(--c-text);
-  margin: 0;
-}
-
-.how-grid {
+/* ── Services proposés ── */
+.services-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  max-width: 820px;
-  margin: 0 auto 32px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
 @media (max-width: 600px) {
-  .how-grid {
+  .services-grid {
     grid-template-columns: 1fr;
-    max-width: 100%;
   }
 }
 
-.how-step {
+.service-item {
   background: #fff;
   border: 1px solid var(--c-border);
   border-radius: 12px;
-  padding: 24px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
+  padding: 22px 20px;
 }
 
-.how-step-icon {
+.service-item-icon {
   width: 40px;
   height: 40px;
   border-radius: 10px;
@@ -665,19 +663,9 @@ function avatarUrl(u) {
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  flex-shrink: 0;
 }
 
-.how-step-number {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--c-primary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 6px;
-}
-
-.how-step-title {
+.service-item-title {
   font-size: 14px;
   font-weight: 700;
   color: var(--c-text);
@@ -685,131 +673,60 @@ function avatarUrl(u) {
   letter-spacing: -0.01em;
 }
 
-.how-step-desc {
+.service-item-desc {
   font-size: 13px;
   color: var(--c-text-md);
   line-height: 1.5;
 }
 
-.how-cta {
+/* ── Rejoignez-nous ── */
+.cta-section {
+  margin-bottom: 56px;
+}
+
+.cta-card {
+  background: linear-gradient(150deg, #1C0A03 0%, #5C200E 45%, #8B3214 100%);
+  border-radius: 16px;
+  padding: 40px 36px;
   text-align: center;
 }
 
-/* ── Services proposés ── */
-.services-card {
-  background: #fff;
-  border: 1px solid var(--c-border);
-  border-radius: 16px;
-  padding: 32px 36px;
+.cta-card .fin-label {
+  color: rgba(255, 255, 255, .7);
 }
 
-.services-header {
-  margin-bottom: 20px;
+.cta-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #fff;
+  margin: 0 0 10px;
 }
 
-.services-body {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.services-text {
+.cta-text {
   font-size: 15px;
-  color: var(--c-text-md);
-  line-height: 1.7;
-  margin: 0;
+  color: rgba(255, 255, 255, .72);
+  max-width: 480px;
+  margin: 0 auto 24px;
+  line-height: 1.6;
 }
 
-.services-notes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-left: 12px;
-  border-left: 2px solid var(--c-border);
-}
-
-.services-note {
-  display: flex;
-  align-items: baseline;
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
-  margin: 0;
-  font-size: 13px;
-  color: var(--c-text-sm);
-  line-height: 1.65;
-  font-style: italic;
-}
-
-@media (max-width: 600px) {
-  .services-card {
-    padding: 24px 20px;
-  }
-}
-
-/* ── Villes populaires ── */
-.cities-section {
-  margin-top: 44px;
-}
-
-.cities-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.city-chip {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--c-text-muted);
   text-decoration: none;
-  padding: 7px 16px;
-  border: 1px solid var(--c-border);
-  border-radius: 999px;
-  transition: all 0.12s;
-}
-
-.city-chip:hover {
-  color: var(--c-primary);
-  border-color: var(--c-primary);
-  background: var(--c-primary-bg);
-}
-
-.city-chip--more {
-  color: var(--c-text-sm);
-  border-style: dashed;
-  cursor: default;
-  font-style: italic;
-}
-
-/* ── FAQ ── */
-.faq-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.faq-item {
-  background: #fff;
-  border: 1px solid var(--c-border);
-  border-radius: 10px;
-  padding: 14px 18px;
-}
-
-.faq-question {
   font-size: 14px;
   font-weight: 700;
-  color: var(--c-text);
-  cursor: pointer;
-  list-style: none;
+  color: #7A2E12;
+  padding: 12px 24px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  transition: background 0.12s;
 }
 
-.faq-question::-webkit-details-marker {
-  display: none;
-}
-
-.faq-answer {
-  font-size: 13px;
-  color: var(--c-text-md);
-  line-height: 1.6;
-  margin: 10px 0 0;
+.cta-btn:hover {
+  background: #F5E8DC;
 }
 </style>
