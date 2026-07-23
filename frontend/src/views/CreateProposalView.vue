@@ -1,13 +1,21 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { storeToRefs } from 'pinia'
 import api from '@/api'
 import CityInput from '@/components/CityInput.vue'
 
+const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
+const { user } = storeToRefs(auth)
 const loading = ref(false)
+const initialLoading = ref(false)
 const errors = ref({})
 const globalError = ref('')
+
+const isEdit = computed(() => !!route.params.id)
 
 const FFT_RANKINGS = [
   'NC', '40', '30/5', '30/4', '30/3', '30/2', '30/1', '30',
@@ -34,7 +42,13 @@ const form = ref({
   minRanking: null,
   maxRanking: null,
   surface: null,
+  joinMode: 'auto',
 })
+
+const joinModes = [
+  { value: 'auto', icon: 'mdi-flash-outline', label: 'Acceptation automatique', desc: 'Les joueurs rejoignent directement' },
+  { value: 'approval', icon: 'mdi-clipboard-check-outline', label: 'Je valide chaque participant', desc: 'Les joueurs envoient une demande' },
+]
 
 const gameTypes = [
   { value: 'simple', label: 'Simple', icon: 'mdi-account', desc: '1v1' },
@@ -58,18 +72,58 @@ const durations = [
   { value: 180, title: '3h' },
 ]
 
+function toLocalDateTimeInput(iso) {
+  const d = new Date(iso)
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+  return d.toISOString().slice(0, 16)
+}
+
+onMounted(async () => {
+  if (!isEdit.value) return
+  initialLoading.value = true
+  try {
+    const res = await api.get(`/proposals/${route.params.id}`)
+    const p = res.data
+    if (p.author?.id !== user.value?.id) {
+      router.push(`/parties/${route.params.id}`)
+      return
+    }
+    form.value = {
+      title: p.title,
+      description: p.description || '',
+      city: p.city,
+      postalCode: p.postalCode,
+      address: p.address || '',
+      scheduledAt: toLocalDateTimeInput(p.scheduledAt),
+      duration: p.duration,
+      gameType: p.gameType,
+      maxPlayers: p.maxPlayers,
+      minRanking: p.minRanking,
+      maxRanking: p.maxRanking,
+      surface: p.surface,
+      joinMode: p.joinMode,
+    }
+  } catch {
+    router.push('/parties')
+  } finally {
+    initialLoading.value = false
+  }
+})
+
 async function submit() {
   loading.value = true
   errors.value = {}
   globalError.value = ''
   try {
-    const res = await api.post('/proposals', form.value)
+    const res = isEdit.value
+      ? await api.patch(`/proposals/${route.params.id}`, form.value)
+      : await api.post('/proposals', form.value)
     router.push(`/parties/${res.data.publicId}`)
   } catch (e) {
     if (e.response?.status === 422) {
       errors.value = e.response.data.errors || {}
-    } else if (e.response?.status === 400) {
-      globalError.value = e.response.data.error || 'Une erreur est survenue.'
+    } else {
+      globalError.value = e.response?.data?.error || 'Une erreur est survenue.'
     }
   } finally {
     loading.value = false
@@ -81,9 +135,11 @@ async function submit() {
   <div class="page-sm">
     <!-- Header -->
     <div class="mb-6">
-      <p class="fin-label" style="margin:0 0 4px;">Nouvelle partie</p>
-      <h1 class="create-page-title">Proposer une partie</h1>
-      <p class="create-page-subtitle">Créez une partie pour trouver des partenaires près de chez vous</p>
+      <p class="fin-label create-page-label">{{ isEdit ? 'Modifier la partie' : 'Nouvelle partie' }}</p>
+      <h1 class="create-page-title">{{ isEdit ? 'Modifier votre partie' : 'Proposer une partie' }}</h1>
+      <p class="create-page-subtitle">
+        {{ isEdit ? 'Mettez à jour les informations de votre partie' : 'Créez une partie pour trouver des partenaires près de chez vous' }}
+      </p>
     </div>
 
     <v-alert
@@ -97,7 +153,11 @@ async function submit() {
       {{ globalError }}
     </v-alert>
 
-    <v-form @submit.prevent="submit">
+    <div v-if="initialLoading" class="create-loading-center">
+      <v-progress-circular size="32" color="primary" indeterminate />
+    </div>
+
+    <v-form v-else @submit.prevent="submit">
       <!-- Section 1: Infos générales -->
       <div class="form-section">
         <h2 class="form-section-title">
@@ -116,7 +176,7 @@ async function submit() {
 
         <v-row>
           <v-col cols="12" sm="6">
-            <div class="form-field-city">
+            <div class="form-field">
               <label class="field-label">Ville *</label>
               <CityInput
                 v-model="form.city"
@@ -128,13 +188,14 @@ async function submit() {
             </div>
           </v-col>
           <v-col cols="12" sm="6">
-            <v-text-field
-              v-model="form.address"
-              label="Club / Adresse"
-              prepend-inner-icon="mdi-home-map-marker"
-              hide-details
-              placeholder="Ex : Tennis Club de Paris"
-            />
+            <div class="form-field">
+              <label class="field-label">Club / Adresse</label>
+              <input
+                v-model="form.address"
+                class="field-input"
+                placeholder="Ex : Tennis Club de Paris"
+              />
+            </div>
           </v-col>
         </v-row>
 
@@ -182,7 +243,7 @@ async function submit() {
         </h2>
 
         <div class="game-type-group">
-          <p class="game-type-label">Format</p>
+          <p class="field-label">Format</p>
           <div class="game-type-list">
             <button
               v-for="g in gameTypes"
@@ -230,6 +291,26 @@ async function submit() {
             />
           </v-col>
         </v-row>
+
+        <div class="game-type-group mt-4">
+          <p class="field-label">Inscription des participants</p>
+          <div class="game-type-list">
+            <button
+              v-for="m in joinModes"
+              :key="m.value"
+              type="button"
+              class="game-type-btn"
+              :class="{ 'game-type-btn--active': form.joinMode === m.value }"
+              @click="form.joinMode = m.value"
+            >
+              <div class="game-type-btn-header">
+                <v-icon size="16" :color="form.joinMode === m.value ? 'primary' : 'text-subtle'">{{ m.icon }}</v-icon>
+                <span class="game-type-btn-label" :class="{ 'game-type-btn-label--active': form.joinMode === m.value }">{{ m.label }}</span>
+              </div>
+              <span class="game-type-btn-desc">{{ m.desc }}</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Section 3: Classement -->
@@ -268,7 +349,7 @@ async function submit() {
       <div class="form-actions">
         <button type="submit" :disabled="loading" class="btn-primary">
           <v-progress-circular v-if="loading" size="14" width="2" color="white" indeterminate />
-          Publier la partie
+          {{ isEdit ? 'Enregistrer les modifications' : 'Publier la partie' }}
         </button>
         <button type="button" class="btn-secondary" @click="router.back()">Annuler</button>
       </div>
@@ -277,9 +358,11 @@ async function submit() {
 </template>
 
 <style scoped>
+.create-page-label { margin: 0 0 4px; }
 .create-page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; color: var(--c-text); margin: 0; }
 .create-page-subtitle { font-size: 14px; color: var(--c-text-md); margin-top: 6px; }
 .create-alert { border-radius: 14px; }
+.create-loading-center { display: flex; justify-content: center; padding: 80px; }
 
 .form-section {
   background: white;
@@ -317,14 +400,7 @@ async function submit() {
 
 /* Game type selector */
 .game-type-group { margin-bottom: 20px; }
-.game-type-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--c-text-md);
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+.game-type-group .field-label { margin-bottom: 10px; }
 .game-type-list { display: flex; gap: 10px; flex-wrap: wrap; }
 .game-type-btn {
   flex: 1;
@@ -344,10 +420,10 @@ async function submit() {
 .game-type-btn-label--active { color: var(--c-primary); }
 .game-type-btn-desc { font-size: 11px; color: var(--c-text-sm); }
 
-/* City field wrapper (replaces v-text-field for CityInput) */
-.form-field-city { margin-bottom: 0; }
-.form-field-city .field-label { display: block; margin-bottom: 4px; }
-.form-field-city .field-input { width: 100%; }
+/* Native field wrapper (Ville / Club-Adresse) — aligné avec les v-text-field
+   voisins de la même ligne (même label externe, même hauteur d'input) */
+.form-field { margin-bottom: 0; }
+.form-field .field-input { width: 100%; }
 
 /* Actions */
 .form-actions { display: flex; gap: 12px; align-items: center; }

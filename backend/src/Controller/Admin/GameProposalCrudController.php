@@ -41,6 +41,9 @@ class GameProposalCrudController extends AbstractCrudController
         yield TextField::new('city', 'Ville');
         yield ChoiceField::new('status', 'Statut')
             ->setChoices(['Disponible' => 'open', 'Complet' => 'full', 'Annulée' => 'cancelled']);
+        yield ChoiceField::new('joinMode', 'Mode d\'inscription')
+            ->setChoices(['Automatique' => 'auto', 'Validation manuelle' => 'approval'])
+            ->hideOnIndex();
         yield ChoiceField::new('gameType', 'Type')
             ->setChoices(['Simple' => 'simple', 'Double' => 'double', 'Double mixte' => 'double_mixte'])
             ->allowMultipleChoices(false);

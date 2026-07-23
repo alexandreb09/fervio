@@ -22,7 +22,7 @@ onMounted(() => {
 
 async function loadHome() {
   try {
-    const [props, players] = await Promise.all([api.get('/proposals?status=open'), api.get('/users?sort=createdAt')])
+    const [props, players] = await Promise.all([api.get('/proposals'), api.get('/users?sort=createdAt')])
     recentProposals.value = props.data.slice(0, 4)
     recentPlayers.value = players.data.slice(0, 6)
   } finally { loading.value = false }

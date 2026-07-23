@@ -4,10 +4,13 @@ namespace App\Controller;
 
 use App\Entity\GameProposal;
 use App\Entity\Notification;
+use App\Entity\ProposalJoinRequest;
 use App\Entity\User;
 use App\Repository\GameProposalRepository;
+use App\Repository\ProposalJoinRequestRepository;
 use App\Repository\UserRepository;
 use App\Service\FervioEmail;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -57,11 +60,13 @@ class GameProposalController extends AbstractController
     #[Route('/{publicId}', name: 'api_proposals_show', methods: ['GET'], requirements: ['publicId' => '\d+'])]
     public function show(
         #[MapEntity(mapping: ['publicId' => 'publicId'])] GameProposal $proposal,
-        NormalizerInterface $normalizer
+        NormalizerInterface $normalizer,
+        ProposalJoinRequestRepository $joinRequestRepo
     ): JsonResponse {
+        /** @var User|null $currentUser */
+        $currentUser = $this->getUser();
+
         if ($proposal->isPrivate()) {
-            /** @var User|null $currentUser */
-            $currentUser = $this->getUser();
             if (!$currentUser) {
                 return $this->json(['error' => 'Accès refusé'], 403);
             }
@@ -72,7 +77,12 @@ class GameProposalController extends AbstractController
             }
         }
 
-        return $this->json($normalizer->normalize($proposal, null, ['groups' => ['proposal:read', 'user:list']]));
+        $data = $normalizer->normalize($proposal, null, ['groups' => ['proposal:read', 'user:list']]);
+        if ($currentUser && $proposal->getJoinMode() === 'approval') {
+            $data['viewerHasPendingRequest'] = $joinRequestRepo->findOneByProposalAndRequester($proposal, $currentUser) !== null;
+        }
+
+        return $this->json($data);
     }
 
     #[Route('', name: 'api_proposals_create', methods: ['POST'])]
@@ -139,7 +149,8 @@ class GameProposalController extends AbstractController
         Request $request,
         EntityManagerInterface $em,
         ValidatorInterface $validator,
-        NormalizerInterface $normalizer
+        NormalizerInterface $normalizer,
+        ProposalJoinRequestRepository $joinRequestRepo
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
@@ -147,8 +158,22 @@ class GameProposalController extends AbstractController
             return $this->json(['error' => 'Accès refusé'], 403);
         }
 
+        $wasApproval = $proposal->getJoinMode() === 'approval';
         $data = json_decode($request->getContent(), true);
         $this->hydrateProposal($proposal, $data);
+
+        if ($proposal->getMaxPlayers() < $proposal->getParticipantCount()) {
+            return $this->json(['error' => 'Le nombre de joueurs recherchés ne peut pas être inférieur au nombre de participants déjà inscrits.'], 400);
+        }
+
+        if ($wasApproval && $proposal->getJoinMode() !== 'approval') {
+            // Le mode passe de "validation manuelle" à "automatique" : les demandes
+            // en attente n'ont plus de sens (join() ne les résoudrait jamais) et
+            // bloqueraient sinon indéfiniment les demandeurs concernés.
+            foreach ($joinRequestRepo->findPendingForProposal($proposal) as $staleRequest) {
+                $em->remove($staleRequest);
+            }
+        }
 
         $errors = $validator->validate($proposal);
         if (count($errors) > 0) {
@@ -188,6 +213,7 @@ class GameProposalController extends AbstractController
         NormalizerInterface $normalizer,
         MailerInterface $mailer,
         FervioEmail $fervioEmail,
+        ProposalJoinRequestRepository $joinRequestRepo,
     ): JsonResponse {
         /** @var User $user */
         $user = $this->getUser();
@@ -203,6 +229,52 @@ class GameProposalController extends AbstractController
         }
         if ($proposal->hasParticipant($user)) {
             return $this->json(['error' => 'Vous avez déjà rejoint cette partie'], 400);
+        }
+        if ($joinRequestRepo->findOneByProposalAndRequester($proposal, $user)) {
+            return $this->json(['error' => 'Vous avez déjà une demande en attente pour cette partie'], 400);
+        }
+
+        if ($proposal->getJoinMode() === 'approval' && !$proposal->isPrivate()) {
+            $em->persist(new ProposalJoinRequest($proposal, $user));
+            $em->persist(new Notification($proposal->getAuthor(), 'proposal_join_request', [
+                'requesterFirstName' => $user->getFirstName(),
+                'requesterLastName'  => $user->getLastName() ?? '',
+                'proposalTitle'      => $proposal->getTitle(),
+                'proposalPublicId'   => $proposal->getPublicId(),
+            ]));
+            try {
+                $em->flush();
+            } catch (UniqueConstraintViolationException) {
+                return $this->json(['error' => 'Vous avez déjà une demande en attente pour cette partie'], 400);
+            }
+
+            $author = $proposal->getAuthor();
+            if ($author->isNotifyProposalReplies()) {
+                $requester   = $user->getFirstName() . ($user->getLastName() ? ' ' . $user->getLastName() : '');
+                $proposalUrl = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/') . '/parties/' . $proposal->getPublicId();
+
+                $body = '<p style="margin:0 0 16px;font-size:15px;color:#78604E;line-height:1.6;">'
+                    . htmlspecialchars($requester, ENT_QUOTES) . ' souhaite rejoindre votre partie :'
+                    . '</p>'
+                    . '<p style="margin:0 0 24px;font-size:15px;font-weight:700;color:#3D2A20;">'
+                    . htmlspecialchars($proposal->getTitle(), ENT_QUOTES)
+                    . '</p>'
+                    . FervioEmail::button($proposalUrl, 'Voir la demande')
+                    . FervioEmail::fallbackLink($proposalUrl);
+
+                try {
+                    $mailer->send($fervioEmail->build(
+                        $author->getEmail(),
+                        'Nouvelle demande pour votre partie — Fervio',
+                        $author->getFirstName(),
+                        $body
+                    ));
+                } catch (\Throwable) {}
+            }
+
+            $data = $normalizer->normalize($proposal, null, ['groups' => ['proposal:read', 'user:list']]);
+            $data['viewerHasPendingRequest'] = true;
+            return $this->json($data);
         }
 
         $proposal->addParticipant($user);
@@ -271,6 +343,121 @@ class GameProposalController extends AbstractController
         return $this->json($normalizer->normalize($proposal, null, ['groups' => ['proposal:read', 'user:list']]));
     }
 
+    #[Route('/{publicId}/join-requests', name: 'api_proposals_join_requests_list', methods: ['GET'], requirements: ['publicId' => '\d+'])]
+    public function listJoinRequests(
+        #[MapEntity(mapping: ['publicId' => 'publicId'])] GameProposal $proposal,
+        ProposalJoinRequestRepository $joinRequestRepo,
+        NormalizerInterface $normalizer
+    ): JsonResponse {
+        // Les demandes en attente sont visibles de tous les visiteurs de la partie
+        // (comme les participants déjà acceptés) ; seules les actions accepter/refuser
+        // restent réservées à l'organisateur, via les routes dédiées ci-dessous.
+        $requests = $joinRequestRepo->findPendingForProposal($proposal);
+
+        return $this->json($normalizer->normalize($requests, null, ['groups' => ['joinrequest:read', 'user:list']]));
+    }
+
+    #[Route('/{publicId}/join-requests/{requestId}/accept', name: 'api_proposals_join_requests_accept', methods: ['POST'], requirements: ['publicId' => '\d+', 'requestId' => '\d+'])]
+    public function acceptJoinRequest(
+        #[MapEntity(mapping: ['publicId' => 'publicId'])] GameProposal $proposal,
+        #[MapEntity(mapping: ['requestId' => 'id'])] ProposalJoinRequest $joinRequest,
+        EntityManagerInterface $em,
+        NormalizerInterface $normalizer,
+        MailerInterface $mailer,
+        FervioEmail $fervioEmail,
+    ): JsonResponse {
+        /** @var User $user */
+        $user = $this->getUser();
+        if ($proposal->getAuthor()->getId() !== $user->getId()) {
+            return $this->json(['error' => 'Accès refusé'], 403);
+        }
+        if ($joinRequest->getProposal()->getId() !== $proposal->getId()) {
+            return $this->json(['error' => 'Demande introuvable'], 404);
+        }
+        if ($proposal->isFull()) {
+            return $this->json(['error' => 'Cette partie est déjà complète'], 400);
+        }
+
+        $requester = $joinRequest->getRequester();
+        $proposal->addParticipant($requester);
+        if ($proposal->isFull()) {
+            $proposal->setStatus('full');
+        }
+
+        $em->remove($joinRequest);
+        $em->persist(new Notification($requester, 'proposal_join_accepted', [
+            'proposalTitle'    => $proposal->getTitle(),
+            'proposalPublicId' => $proposal->getPublicId(),
+        ]));
+        $em->flush();
+
+        $proposalUrl = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/') . '/parties/' . $proposal->getPublicId();
+        $body = '<p style="margin:0 0 16px;font-size:15px;color:#78604E;line-height:1.6;">'
+            . 'Votre demande pour rejoindre la partie suivante a été acceptée :'
+            . '</p>'
+            . '<p style="margin:0 0 24px;font-size:15px;font-weight:700;color:#3D2A20;">'
+            . htmlspecialchars($proposal->getTitle(), ENT_QUOTES)
+            . '</p>'
+            . FervioEmail::button($proposalUrl, 'Voir la partie')
+            . FervioEmail::fallbackLink($proposalUrl);
+
+        try {
+            $mailer->send($fervioEmail->build(
+                $requester->getEmail(),
+                'Votre demande a été acceptée — Fervio',
+                $requester->getFirstName(),
+                $body
+            ));
+        } catch (\Throwable) {}
+
+        return $this->json($normalizer->normalize($proposal, null, ['groups' => ['proposal:read', 'user:list']]));
+    }
+
+    #[Route('/{publicId}/join-requests/{requestId}', name: 'api_proposals_join_requests_decline', methods: ['DELETE'], requirements: ['publicId' => '\d+', 'requestId' => '\d+'])]
+    public function declineJoinRequest(
+        #[MapEntity(mapping: ['publicId' => 'publicId'])] GameProposal $proposal,
+        #[MapEntity(mapping: ['requestId' => 'id'])] ProposalJoinRequest $joinRequest,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        /** @var User $user */
+        $user = $this->getUser();
+        if ($proposal->getAuthor()->getId() !== $user->getId()) {
+            return $this->json(['error' => 'Accès refusé'], 403);
+        }
+        if ($joinRequest->getProposal()->getId() !== $proposal->getId()) {
+            return $this->json(['error' => 'Demande introuvable'], 404);
+        }
+
+        $requester = $joinRequest->getRequester();
+        $em->remove($joinRequest);
+        $em->persist(new Notification($requester, 'proposal_join_declined', [
+            'proposalTitle'    => $proposal->getTitle(),
+            'proposalPublicId' => $proposal->getPublicId(),
+        ]));
+        $em->flush();
+
+        return $this->json(null, 204);
+    }
+
+    #[Route('/{publicId}/join-requests/mine', name: 'api_proposals_join_requests_cancel', methods: ['DELETE'], requirements: ['publicId' => '\d+'])]
+    public function cancelMyJoinRequest(
+        #[MapEntity(mapping: ['publicId' => 'publicId'])] GameProposal $proposal,
+        ProposalJoinRequestRepository $joinRequestRepo,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        /** @var User $user */
+        $user = $this->getUser();
+        $joinRequest = $joinRequestRepo->findOneByProposalAndRequester($proposal, $user);
+        if (!$joinRequest) {
+            return $this->json(['error' => 'Demande introuvable'], 404);
+        }
+
+        $em->remove($joinRequest);
+        $em->flush();
+
+        return $this->json(null, 204);
+    }
+
     private function hydrateProposal(GameProposal $proposal, array $data): void
     {
         if (isset($data['title'])) $proposal->setTitle($data['title']);
@@ -283,6 +470,7 @@ class GameProposalController extends AbstractController
         if (array_key_exists('minRanking', $data)) $proposal->setMinRanking($data['minRanking'] ?: null);
         if (array_key_exists('maxRanking', $data)) $proposal->setMaxRanking($data['maxRanking'] ?: null);
         if (array_key_exists('maxPlayers', $data)) $proposal->setMaxPlayers(max(1, (int) $data['maxPlayers']));
+        if (array_key_exists('joinMode', $data)) $proposal->setJoinMode($data['joinMode'] === 'approval' ? 'approval' : 'auto');
         if (array_key_exists('duration', $data)) $proposal->setDuration($data['duration'] ? (int) $data['duration'] : null);
         if (isset($data['status'])) $proposal->setStatus($data['status']);
         if (array_key_exists('latitude', $data)) $proposal->setLatitude($data['latitude'] ?: null);

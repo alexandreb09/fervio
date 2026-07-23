@@ -93,7 +93,7 @@ class ReportController extends AbstractController
     ): ?User {
         return match ($targetType) {
             'user'     => $userRepo->find($targetId),
-            'proposal' => $proposalRepo->find($targetId)?->getAuthor(),
+            'proposal' => $proposalRepo->findOneBy(['publicId' => $targetId])?->getAuthor(),
             'message'  => $this->resolveMessageOwner($messageRepo->find($targetId), $reporter),
             default    => null,
         };

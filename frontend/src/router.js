@@ -97,6 +97,14 @@ export const routes = [
     },
   },
   {
+    path: '/parties/:id/modifier',
+    component: () => import('@/views/CreateProposalView.vue'),
+    meta: {
+      title: 'Modifier la partie',
+      requiresAuth: true,
+    },
+  },
+  {
     path: '/parties/:id',
     component: () => import('@/views/ProposalDetailView.vue'),
     meta: {

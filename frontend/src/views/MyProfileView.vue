@@ -21,6 +21,7 @@ const uploadingAvatar = ref(false)
 const avatarInput = ref(null)
 const proposals = ref([])
 const loadingProposals = ref(true)
+const proposalDeleteError = ref('')
 
 const FFT_RANKINGS = [
   'NC', '40', '30/5', '30/4', '30/3', '30/2', '30/1', '30',
@@ -191,10 +192,15 @@ async function saveAccount() {
   }
 }
 
-async function deleteProposal(id) {
+async function deleteProposal(publicId) {
   if (!confirm('Supprimer cette partie ?')) return
-  await api.delete(`/proposals/${id}`)
-  proposals.value = proposals.value.filter(p => p.id !== id)
+  proposalDeleteError.value = ''
+  try {
+    await api.delete(`/proposals/${publicId}`)
+    proposals.value = proposals.value.filter(p => p.publicId !== publicId)
+  } catch (e) {
+    proposalDeleteError.value = e.response?.data?.error || 'Impossible de supprimer cette partie.'
+  }
 }
 
 async function handleAvatarChange(event) {
@@ -603,6 +609,8 @@ function surfaceLabel(v) {
         </router-link>
       </div>
 
+      <div v-if="proposalDeleteError" class="error-banner mb-3">{{ proposalDeleteError }}</div>
+
       <div v-if="loadingProposals" class="skeleton-list">
         <v-skeleton-loader v-for="i in 3" :key="i" type="list-item-two-line" />
       </div>
@@ -616,7 +624,7 @@ function surfaceLabel(v) {
             <div class="proposal-meta">{{ formatDate(p.scheduledAt) }} · {{ p.city }}</div>
           </div>
           <span :class="statusClass[p.status]" class="badge--xs">{{ statusLabels[p.status] }}</span>
-          <button class="btn-delete" @click="deleteProposal(p.id)">Supprimer</button>
+          <button class="btn-delete" @click="deleteProposal(p.publicId)">Supprimer</button>
         </div>
       </div>
 

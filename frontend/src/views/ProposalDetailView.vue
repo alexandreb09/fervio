@@ -20,6 +20,14 @@ const reportDialog = ref(false)
 const msgText = ref('')
 const msgSending = ref(false)
 const msgSent = ref(false)
+const hasPendingRequest = ref(false)
+const pendingRequests = ref([])
+const requestsLoading = ref(false)
+const requestLoadingIds = ref([])
+const joinError = ref('')
+const requestError = ref('')
+
+function isRequestLoading(id) { return requestLoadingIds.value.includes(id) }
 
 const surfaceLabels = { terre_battue: 'Terre battue', gazon: 'Gazon', dur: 'Dur', synthetique: 'Synthétique', indoor: 'Indoor' }
 const gameTypeLabels = { simple: 'Simple', double: 'Double', double_mixte: 'Double mixte' }
@@ -28,8 +36,13 @@ onMounted(async () => {
   try {
     const res = await api.get(`/proposals/${route.params.id}`)
     proposal.value = res.data
+    hasPendingRequest.value = !!res.data.viewerHasPendingRequest
   } catch { router.push('/parties') }
   finally { loading.value = false }
+
+  if (proposal.value?.joinMode === 'approval') {
+    loadPendingRequests()
+  }
 })
 
 const isAuthor = computed(() => user.value?.id === proposal.value?.author?.id)
@@ -38,11 +51,62 @@ const canJoin = computed(() => isLoggedIn.value && !isAuthor.value && !isPartici
 
 async function joinLeave() {
   actionLoading.value = true
+  joinError.value = ''
   try {
-    const ep = isParticipant.value ? 'leave' : 'join'
-    const res = await api.post(`/proposals/${route.params.id}/${ep}`)
+    const res = isParticipant.value
+      ? await api.delete(`/proposals/${route.params.id}/leave`)
+      : await api.post(`/proposals/${route.params.id}/join`)
     proposal.value = res.data
+    hasPendingRequest.value = !!res.data.viewerHasPendingRequest
+  } catch (e) {
+    joinError.value = e.response?.data?.error || 'Une erreur est survenue.'
   } finally { actionLoading.value = false }
+}
+
+async function cancelMyRequest() {
+  actionLoading.value = true
+  joinError.value = ''
+  try {
+    await api.delete(`/proposals/${route.params.id}/join-requests/mine`)
+    hasPendingRequest.value = false
+  } catch (e) {
+    joinError.value = e.response?.data?.error || 'Une erreur est survenue.'
+  } finally { actionLoading.value = false }
+}
+
+async function loadPendingRequests() {
+  requestsLoading.value = true
+  try {
+    const res = await api.get(`/proposals/${route.params.id}/join-requests`)
+    pendingRequests.value = res.data
+  } finally { requestsLoading.value = false }
+}
+
+async function acceptRequest(requestId) {
+  requestLoadingIds.value = [...requestLoadingIds.value, requestId]
+  requestError.value = ''
+  try {
+    const res = await api.post(`/proposals/${route.params.id}/join-requests/${requestId}/accept`)
+    proposal.value = res.data
+    pendingRequests.value = pendingRequests.value.filter(r => r.id !== requestId)
+  } catch (e) {
+    requestError.value = e.response?.data?.error || "Impossible d'accepter cette demande."
+  } finally {
+    requestLoadingIds.value = requestLoadingIds.value.filter(id => id !== requestId)
+  }
+}
+
+async function declineRequest(requestId) {
+  requestLoadingIds.value = [...requestLoadingIds.value, requestId]
+  requestError.value = ''
+  try {
+    await api.delete(`/proposals/${route.params.id}/join-requests/${requestId}`)
+    pendingRequests.value = pendingRequests.value.filter(r => r.id !== requestId)
+  } catch (e) {
+    requestError.value = e.response?.data?.error || 'Impossible de refuser cette demande.'
+  } finally {
+    requestLoadingIds.value = requestLoadingIds.value.filter(id => id !== requestId)
+  }
 }
 
 async function sendMessage() {
@@ -86,6 +150,9 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
             </span>
             <span v-if="proposal.isPrivate" class="badge badge-purple badge--md">
               <v-icon size="11">mdi-lock-outline</v-icon> Privée
+            </span>
+            <span v-if="proposal.joinMode === 'approval'" class="badge badge-blue badge--md">
+              <v-icon size="11">mdi-clipboard-check-outline</v-icon> Validation requise
             </span>
             <span v-if="proposal.gameType" class="badge badge-purple">{{ gameTypeLabels[proposal.gameType] }}</span>
             <span v-if="proposal.surface" class="badge badge-gray">{{ surfaceLabels[proposal.surface] }}</span>
@@ -182,6 +249,46 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
         </div>
       </div>
 
+      <!-- Demandes en attente (visibles de tous, actions réservées à l'organisateur) -->
+      <div v-if="proposal.joinMode === 'approval'" class="detail-requests">
+        <p class="detail-participants-label">Demandes en attente</p>
+        <div v-if="requestError" class="error-banner mb-3">{{ requestError }}</div>
+        <div v-if="requestsLoading" class="loading-center loading-center--sm">
+          <v-progress-circular size="22" color="primary" indeterminate />
+        </div>
+        <div v-else class="participants-list">
+          <div v-for="r in pendingRequests" :key="r.id" class="participant-row request-row">
+            <v-avatar size="32">
+              <v-img :src="avatarUrl(r.requester)" :alt="`Photo de ${r.requester.firstName} ${r.requester.lastName}`" />
+            </v-avatar>
+            <div class="participant-info">
+              <span class="participant-name">{{ r.requester.firstName }} {{ r.requester.lastName }}</span>
+            </div>
+            <span v-if="r.requester.fftRanking" class="badge badge-gray">{{ r.requester.fftRanking }}</span>
+            <div v-if="isAuthor" class="request-actions">
+              <button
+                class="btn-request btn-request--accept"
+                :disabled="isRequestLoading(r.id)"
+                @click="acceptRequest(r.id)"
+              >
+                <v-icon size="14">mdi-check</v-icon> Accepter
+              </button>
+              <button
+                class="btn-request btn-request--decline"
+                :disabled="isRequestLoading(r.id)"
+                @click="declineRequest(r.id)"
+              >
+                <v-icon size="14">mdi-close</v-icon> Refuser
+              </button>
+            </div>
+          </div>
+          <div v-if="!pendingRequests.length" class="participants-empty">
+            <v-icon size="13" color="border-light">mdi-clipboard-text-off-outline</v-icon>
+            Aucune demande en attente pour l'instant.
+          </div>
+        </div>
+      </div>
+
       <!-- Description -->
       <div v-if="proposal.description" class="detail-description">
         <p class="detail-description-label">Description</p>
@@ -202,10 +309,11 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
       </div>
 
       <!-- Actions -->
+      <div v-if="joinError" class="error-banner mb-3">{{ joinError }}</div>
       <div class="detail-actions">
         <template v-if="isLoggedIn">
           <button
-            v-if="!isAuthor"
+            v-if="!isAuthor && !hasPendingRequest"
             class="btn-join"
             :class="isParticipant ? 'btn-join--leave' : 'btn-join--join'"
             :disabled="actionLoading || (proposal.status === 'full' && !isParticipant)"
@@ -213,7 +321,18 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
           >
             <v-progress-circular v-if="actionLoading" size="14" width="2" :color="isParticipant ? 'error' : 'white'" indeterminate />
             <v-icon v-else size="15">{{ isParticipant ? 'mdi-exit-to-app' : 'mdi-plus' }}</v-icon>
-            {{ isParticipant ? 'Se désinscrire' : (proposal.status === 'full' ? 'Complet' : 'Rejoindre') }}
+            {{ isParticipant ? 'Se désinscrire' : (proposal.status === 'full' ? 'Complet' : (proposal.joinMode === 'approval' ? 'Demander à rejoindre' : 'Rejoindre')) }}
+          </button>
+
+          <button
+            v-if="!isAuthor && hasPendingRequest"
+            class="btn-join btn-join--pending"
+            :disabled="actionLoading"
+            @click="cancelMyRequest"
+          >
+            <v-progress-circular v-if="actionLoading" size="14" width="2" color="text-subtle" indeterminate />
+            <v-icon v-else size="15">mdi-clock-outline</v-icon>
+            {{ actionLoading ? '' : 'Demande envoyée — Annuler' }}
           </button>
 
           <button
@@ -226,6 +345,10 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
           <button v-if="!isAuthor" class="proposal-report-link" @click="reportDialog = true">
             <v-icon size="13">mdi-flag-outline</v-icon> Signaler cette partie
           </button>
+
+          <router-link v-if="isAuthor" :to="`/parties/${route.params.id}/modifier`" class="btn-secondary btn-contact">
+            <v-icon size="15">mdi-pencil-outline</v-icon> Modifier la partie
+          </router-link>
         </template>
 
         <router-link v-else to="/connexion" class="btn-primary btn-login-cta">
@@ -268,7 +391,7 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
     <ReportModal
       v-if="reportDialog && proposal"
       target-type="proposal"
-      :target-id="proposal.id"
+      :target-id="proposal.publicId"
       @close="reportDialog = false"
     />
   </div>
@@ -376,6 +499,36 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
 .participant-name { font-size: 13px; font-weight: 600; color: var(--c-text); }
 .participants-empty { font-size: 13px; color: var(--c-text-sm); display: flex; align-items: center; gap: 6px; }
 
+/* ── Demandes en attente ── */
+.detail-requests {
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 16px 20px 20px;
+  margin-bottom: 16px;
+}
+.loading-center--sm { padding: 20px; }
+.request-row { padding: 4px 0; }
+.request-actions { display: flex; gap: 8px; }
+.btn-request {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: Inter, sans-serif;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.btn-request:disabled { opacity: 0.6; cursor: default; }
+.btn-request--accept { background: var(--c-primary-bg); color: var(--c-primary); }
+.btn-request--accept:hover:not(:disabled) { background: #DDD6FE; }
+.btn-request--decline { background: #FEF2F2; color: #B91C1C; }
+.btn-request--decline:hover:not(:disabled) { background: #FEE2E2; }
+
 /* ── Description ── */
 .detail-description {
   background: #fff;
@@ -435,6 +588,8 @@ const fillPercent = computed(() => proposal.value ? Math.round((proposal.value.p
 .btn-join--join:hover:not(:disabled) { background: var(--c-primary-dk); }
 .btn-join--leave { background: #FEF2F2; color: #B91C1C; }
 .btn-join--leave:hover:not(:disabled) { background: #FEE2E2; }
+.btn-join--pending { background: var(--c-hover); color: var(--c-text-md); }
+.btn-join--pending:hover:not(:disabled) { background: var(--c-border); }
 
 .btn-contact { font-size: 14px; padding: 10px 20px; }
 .btn-login-cta { padding: 10px 20px; font-size: 14px; }

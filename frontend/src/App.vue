@@ -7,6 +7,7 @@ import { useNotificationsStore } from '@/stores/notifications'
 import { usePartnersStore } from '@/stores/partners'
 import { storeToRefs } from 'pinia'
 import { avatarUrl } from '@/utils/avatar'
+import { describeNotification } from '@/utils/notifications'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -22,6 +23,7 @@ const newMsgSnackbar = ref(false)
 const prevUnread = ref(-1)
 
 const notifCount = computed(() => notifications.items.length)
+const notifViews = computed(() => notifications.items.map(n => ({ ...n, view: describeNotification(n) })))
 
 function timeAgo(dateStr) {
   const mins = Math.floor((Date.now() - new Date(dateStr)) / 60000)
@@ -118,18 +120,15 @@ watch(isLoggedIn, (val) => {
                 </div>
                 <template v-else>
                   <router-link
-                    v-for="n in notifications.items"
+                    v-for="n in notifViews"
                     :key="n.id"
-                    :to="`/parties/${n.data.proposalPublicId}`"
+                    :to="n.view.link"
                     class="notif-item"
                     @click="bellOpen = false"
                   >
-                    <v-icon size="15" color="primary">mdi-tennis</v-icon>
+                    <v-icon size="15" color="primary">{{ n.view.icon }}</v-icon>
                     <div class="notif-item-body">
-                      <span class="notif-item-text">
-                        <strong>{{ n.data.joinerFirstName }}</strong> a rejoint
-                        <em>{{ n.data.proposalTitle }}</em>
-                      </span>
+                      <span class="notif-item-text" v-html="n.view.text"></span>
                       <span class="notif-item-time">{{ timeAgo(n.createdAt) }}</span>
                     </div>
                   </router-link>
@@ -195,18 +194,15 @@ watch(isLoggedIn, (val) => {
                 </div>
                 <template v-else>
                   <router-link
-                    v-for="n in notifications.items"
+                    v-for="n in notifViews"
                     :key="n.id"
-                    :to="`/parties/${n.data.proposalPublicId}`"
+                    :to="n.view.link"
                     class="notif-item"
                     @click="mobileBellOpen = false"
                   >
-                    <v-icon size="15" color="primary">mdi-tennis</v-icon>
+                    <v-icon size="15" color="primary">{{ n.view.icon }}</v-icon>
                     <div class="notif-item-body">
-                      <span class="notif-item-text">
-                        <strong>{{ n.data.joinerFirstName }}</strong> a rejoint
-                        <em>{{ n.data.proposalTitle }}</em>
-                      </span>
+                      <span class="notif-item-text" v-html="n.view.text"></span>
                       <span class="notif-item-time">{{ timeAgo(n.createdAt) }}</span>
                     </div>
                   </router-link>

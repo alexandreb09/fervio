@@ -42,6 +42,7 @@ security:
         - { path: ^/api/proposals/cities, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/proposals$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/proposals/\d+$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/proposals/\d+/join-requests$, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/stats, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/reports, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

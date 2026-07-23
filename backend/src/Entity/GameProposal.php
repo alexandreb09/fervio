@@ -21,6 +21,8 @@ class GameProposal
 
     public const GAME_TYPES = ['simple', 'double', 'double_mixte'];
 
+    public const JOIN_MODES = ['auto', 'approval'];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -102,6 +104,11 @@ class GameProposal
     #[Groups(['proposal:read', 'proposal:list'])]
     private string $status = 'open';
 
+    #[ORM\Column(length: 20, options: ['default' => 'auto'])]
+    #[Assert\Choice(choices: self::JOIN_MODES)]
+    #[Groups(['proposal:read', 'proposal:list'])]
+    private string $joinMode = 'auto';
+
     #[ORM\ManyToMany(targetEntity: User::class)]
     #[ORM\JoinTable(name: 'proposal_participant')]
     #[Groups(['proposal:read'])]
@@ -177,6 +184,9 @@ class GameProposal
 
     public function getStatus(): string { return $this->status; }
     public function setStatus(string $status): static { $this->status = $status; return $this; }
+
+    public function getJoinMode(): string { return $this->joinMode; }
+    public function setJoinMode(string $joinMode): static { $this->joinMode = $joinMode; return $this; }
 
     public function getParticipants(): Collection { return $this->participants; }
 
