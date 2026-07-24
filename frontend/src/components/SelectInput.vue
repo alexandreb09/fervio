@@ -5,6 +5,7 @@ const props = defineProps({
   modelValue: { type: String, default: '' },
   options: { type: Array, required: true }, // [{ value, label }]
   placeholder: { type: String, default: 'Tous' },
+  disabled: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:modelValue', 'change'])
 
@@ -44,6 +45,7 @@ onUnmounted(() => document.removeEventListener('click', onOutsideClick, true))
       type="button"
       class="select-trigger"
       :class="{ 'select-trigger--open': open, 'select-trigger--filled': !!modelValue }"
+      :disabled="disabled"
       @click="open = !open"
       @keydown="onKeydown"
     >
@@ -98,6 +100,8 @@ onUnmounted(() => document.removeEventListener('click', onOutsideClick, true))
 }
 .select-trigger:hover { border-color: var(--c-border-lt); }
 .select-trigger--open { border-color: var(--c-primary); }
+.select-trigger:disabled { opacity: 0.55; cursor: not-allowed; background: var(--c-bg); }
+.select-trigger:disabled:hover { border-color: var(--c-border); }
 
 .select-placeholder { color: var(--c-text-sm); }
 .select-value { color: var(--c-text); font-weight: 500; }

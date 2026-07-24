@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
@@ -23,17 +23,53 @@ const FFT_RANKINGS = [
   '4/6', '3/6', '2/6', '1/6', '0', '-2/6', '-4/6', '-15', '-30',
 ]
 
+const RADIUS_OPTIONS = [
+  { value: '0', label: 'Ville exacte' },
+  { value: '5', label: '+ 5 km' },
+  { value: '10', label: '+ 10 km' },
+  { value: '15', label: '+ 15 km' },
+  { value: '20', label: '+ 20 km' },
+  { value: '30', label: '+ 30 km' },
+  { value: '50', label: '+ 50 km' },
+  { value: '100', label: '+ 100 km' },
+]
+
 const filters = ref({
   city: route.query.city || '',
+  lat: route.query.lat ? Number(route.query.lat) : null,
+  lng: route.query.lng ? Number(route.query.lng) : null,
+  radius: route.query.radius || '',
   minRanking: route.query.minRanking || '',
   maxRanking: route.query.maxRanking || '',
   gender: route.query.gender || '',
 })
 
+function onCitySelected(e) {
+  filters.value.city = e.name
+  filters.value.lat = e.lat
+  filters.value.lng = e.lon
+}
+
+// "Ma ville" (profil) sert de centre par défaut pour le rayon ; une ville
+// tapée dans le filtre prend le dessus dès qu'elle est renseignée.
+const ownCityAvailable = computed(() =>
+  isLoggedIn.value && auth.user?.latitude != null && auth.user?.longitude != null
+)
+const hasTypedCity = computed(() => filters.value.lat != null && filters.value.lng != null)
+const radiusAvailable = computed(() => ownCityAvailable.value || hasTypedCity.value)
+const usingOwnCity = computed(() => ownCityAvailable.value && !hasTypedCity.value)
+
 async function fetch() {
   loading.value = true
   const params = {}
   if (filters.value.city)       params.city       = filters.value.city
+  const effLat = filters.value.lat ?? (ownCityAvailable.value ? Number(auth.user.latitude) : null)
+  const effLng = filters.value.lng ?? (ownCityAvailable.value ? Number(auth.user.longitude) : null)
+  if (filters.value.radius !== '' && effLat != null && effLng != null) {
+    params.radius = filters.value.radius
+    params.lat    = effLat
+    params.lng    = effLng
+  }
   if (filters.value.minRanking) params.minRanking = filters.value.minRanking
   if (filters.value.maxRanking) params.maxRanking = filters.value.maxRanking
   if (filters.value.gender)     params.gender     = filters.value.gender
@@ -44,7 +80,7 @@ async function fetch() {
 }
 
 function resetFilters() {
-  filters.value = { city: '', minRanking: '', maxRanking: '', gender: '' }
+  filters.value = { city: '', lat: null, lng: null, radius: '', minRanking: '', maxRanking: '', gender: '' }
   fetch()
 }
 
@@ -92,7 +128,24 @@ function genderLabel(g) {
 
           <div class="filter-field">
             <label class="field-label field-label--sm">Ville</label>
-            <CityInput v-model="filters.city" @search="fetch" input-class="field-input field-input--sm" />
+            <CityInput v-model="filters.city" @city-selected="onCitySelected" @search="fetch" input-class="field-input field-input--sm" />
+          </div>
+
+          <div class="filter-field">
+            <label class="field-label field-label--sm">Rayon</label>
+            <SelectInput
+              v-model="filters.radius"
+              placeholder="Aucun"
+              :options="RADIUS_OPTIONS"
+              :disabled="!radiusAvailable"
+              @change="fetch"
+            />
+            <p v-if="usingOwnCity" class="field-hint">
+              <v-icon size="11">mdi-map-marker</v-icon> Autour de {{ auth.user.city }} (votre ville)
+            </p>
+            <p v-else-if="!radiusAvailable" class="field-hint">
+              <v-icon size="11">mdi-information-outline</v-icon> Sélectionnez une ville ci-dessus pour activer le rayon
+            </p>
           </div>
 
           <div class="filter-field">
@@ -162,7 +215,9 @@ function genderLabel(g) {
               </v-avatar>
               <div>
                 <div class="player-card-name">{{ p.firstName }} {{ p.lastName }}</div>
-                <div v-if="p.city" class="player-card-city">{{ p.city }}</div>
+                <div v-if="p.city" class="player-card-city">
+                  {{ p.city }}<span v-if="p.distanceKm != null"> · {{ p.distanceKm }} km</span>
+                </div>
               </div>
               <div class="player-card-badges">
                 <span v-if="p.fftRanking" class="badge badge-purple">{{ p.fftRanking }}</span>
@@ -219,6 +274,7 @@ function genderLabel(g) {
 }
 .filter-panel-title { font-size: 13px; font-weight: 700; color: var(--c-text); margin: 0; }
 .filter-field { margin-bottom: 14px; }
+.field-hint { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--c-text-sm); margin: 6px 0 0; }
 .ranking-range { display: flex; align-items: center; gap: 6px; }
 .ranking-range :deep(.select-wrap) { flex: 1; min-width: 0; }
 .ranking-range-sep { font-size: 12px; color: var(--c-text-sm); flex-shrink: 0; }

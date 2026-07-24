@@ -18,7 +18,7 @@ const FFT_RANKINGS = [
 
 const form = ref({
   firstName: '', lastName: '', email: '', password: '',
-  city: '', postalCode: null, gender: null, fftRanking: null,
+  city: '', postalCode: null, latitude: null, longitude: null, gender: null, fftRanking: null,
 })
 
 async function submit() {
@@ -95,7 +95,7 @@ async function submit() {
             <div class="form-field">
               <label class="field-label">Ville</label>
               <CityInput v-model="form.city" placeholder="Paris" input-class="field-input"
-                @city-selected="e => { form.city = e.name; form.postalCode = e.postalCode }" />
+                @city-selected="e => { form.city = e.name; form.postalCode = e.postalCode; form.latitude = e.lat; form.longitude = e.lon }" />
             </div>
             <div class="form-field">
               <label class="field-label">Genre</label>

@@ -40,6 +40,8 @@ async function fetchSuggestions(q) {
       name: f.properties.city || f.properties.name,
       postalCode: f.properties.postcode,
       label: `${f.properties.city || f.properties.name} (${f.properties.postcode})`,
+      lat: f.geometry?.coordinates?.[1] ?? null,
+      lon: f.geometry?.coordinates?.[0] ?? null,
     }))
   } catch {
     suggestions.value = []
@@ -61,7 +63,7 @@ function onInput(e) {
 function select(item) {
   pendingWatchSkips++
   emit('update:modelValue', item.name)
-  emit('city-selected', { name: item.name, postalCode: item.postalCode })
+  emit('city-selected', { name: item.name, postalCode: item.postalCode, lat: item.lat, lon: item.lon })
   confirmed.value = true
   lastConfirmed.value = item.name
   open.value = false
@@ -80,7 +82,7 @@ function onBlur(e) {
       confirmed.value = true
       pendingWatchSkips++
       emit('update:modelValue', '')
-      emit('city-selected', { name: '', postalCode: null })
+      emit('city-selected', { name: '', postalCode: null, lat: null, lon: null })
     } else {
       // Free-typed text not from a suggestion — revert.
       pendingWatchSkips++
@@ -105,8 +107,11 @@ function onKeydown(e) {
     activeIndex.value = Math.max(activeIndex.value - 1, -1)
   } else if (e.key === 'Enter') {
     e.preventDefault()
-    if (activeIndex.value >= 0) select(suggestions.value[activeIndex.value])
-    else { open.value = false; emit('search') }
+    // Aucune suggestion surlignée (l'utilisateur a juste tapé puis appuyé sur Entrée) :
+    // on retient quand même la meilleure correspondance pour capturer ses coordonnées,
+    // plutôt que de laisser filtrer sur un texte libre sans lat/lon résolus.
+    select(activeIndex.value >= 0 ? suggestions.value[activeIndex.value] : suggestions.value[0])
+    emit('search')
   } else if (e.key === 'Escape') {
     open.value = false
     activeIndex.value = -1

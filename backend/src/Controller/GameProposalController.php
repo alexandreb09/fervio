@@ -10,6 +10,7 @@ use App\Repository\GameProposalRepository;
 use App\Repository\ProposalJoinRequestRepository;
 use App\Repository\UserRepository;
 use App\Service\FervioEmail;
+use App\Service\GeoDistance;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -33,6 +34,11 @@ class GameProposalController extends AbstractController
         $currentUser = $this->getUser();
         $includePrivate = $authorId !== null && $currentUser !== null && $currentUser->getId() === $authorId;
 
+        $lat = $request->query->has('lat') ? (float) $request->query->get('lat') : null;
+        $lng = $request->query->has('lng') ? (float) $request->query->get('lng') : null;
+        $radiusKm = $request->query->has('radius') ? (int) $request->query->get('radius') : null;
+        $useRadius = $radiusKm !== null && $radiusKm > 0 && $lat !== null && $lng !== null;
+
         $proposals = $repo->findByFilters(
             $request->query->get('city'),
             $request->query->get('surface'),
@@ -41,10 +47,20 @@ class GameProposalController extends AbstractController
             $authorId,
             $request->query->get('department'),
             $request->query->getBoolean('includePast'),
-            $includePrivate
+            $includePrivate,
+            $lat,
+            $lng,
+            $radiusKm
         );
 
-        return $this->json($normalizer->normalize($proposals, null, ['groups' => ['proposal:list']]));
+        $normalized = $normalizer->normalize($proposals, null, ['groups' => ['proposal:list']]);
+        if ($useRadius) {
+            foreach ($proposals as $i => $proposal) {
+                $normalized[$i]['distanceKm'] = round(GeoDistance::distanceKm($lat, $lng, (float) $proposal->getLatitude(), (float) $proposal->getLongitude()), 1);
+            }
+        }
+
+        return $this->json($normalized);
     }
 
     #[Route('/received-private', name: 'api_proposals_received_private', methods: ['GET'])]

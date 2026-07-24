@@ -37,7 +37,7 @@ const SURFACES = [
 ]
 
 const form = ref({
-  firstName: '', lastName: '', city: '', postalCode: null, description: '',
+  firstName: '', lastName: '', city: '', postalCode: null, latitude: null, longitude: null, description: '',
   gender: null, fftRanking: null,
   handedness: null, birthYear: null, hasCourt: null, preferredSurface: [],
 })
@@ -88,6 +88,8 @@ function initForms() {
     lastName: user.value.lastName || '',
     city: user.value.city || '',
     postalCode: user.value.postalCode || null,
+    latitude: user.value.latitude || null,
+    longitude: user.value.longitude || null,
     description: user.value.description || '',
     gender: user.value.gender || null,
     fftRanking: user.value.fftRanking || null,
@@ -322,7 +324,7 @@ function surfaceLabel(v) {
             <div class="form-field">
               <label class="field-label">Ville</label>
               <CityInput v-model="form.city" placeholder="Paris" input-class="field-input"
-                @city-selected="e => { form.city = e.name; form.postalCode = e.postalCode }" />
+                @city-selected="e => { form.city = e.name; form.postalCode = e.postalCode; form.latitude = e.lat; form.longitude = e.lon }" />
             </div>
             <div class="form-field">
               <label class="field-label">Genre</label>

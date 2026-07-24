@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\User;
+use App\Service\GeoDistance;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -32,11 +33,23 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         '4/6', '3/6', '2/6', '1/6', '0', '-2/6', '-4/6', '-15', '-30',
     ];
 
-    public function findByFilters(?string $city, ?string $minRanking, ?string $maxRanking, ?string $gender, ?string $department = null, ?string $sort = null): array
+    public function findByFilters(?string $city, ?string $minRanking, ?string $maxRanking, ?string $gender, ?string $department = null, ?string $sort = null, ?float $lat = null, ?float $lng = null, ?int $radiusKm = null): array
     {
         $qb = $this->createQueryBuilder('u');
 
-        if ($city) {
+        $useRadius = $radiusKm !== null && $radiusKm > 0 && $lat !== null && $lng !== null;
+
+        if ($useRadius) {
+            $box = GeoDistance::boundingBox($lat, $lng, (float) $radiusKm);
+            $qb->andWhere('u.latitude IS NOT NULL')
+                ->andWhere('u.longitude IS NOT NULL')
+                ->andWhere('u.latitude BETWEEN :latMin AND :latMax')
+                ->andWhere('u.longitude BETWEEN :lonMin AND :lonMax')
+                ->setParameter('latMin', $box['latMin'])
+                ->setParameter('latMax', $box['latMax'])
+                ->setParameter('lonMin', $box['lonMin'])
+                ->setParameter('lonMax', $box['lonMax']);
+        } elseif ($city) {
             $qb->andWhere('u.city LIKE :city')->setParameter('city', '%' . $city . '%');
         }
         if ($department) {
@@ -54,6 +67,10 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         }
 
         $qb->andWhere('u.isSuspended = false');
+
+        if ($useRadius) {
+            return GeoDistance::filterAndSortByDistance($qb->getQuery()->getResult(), $lat, $lng, $radiusKm);
+        }
 
         $orderField = $sort === 'createdAt' ? 'u.createdAt' : 'u.lastActivityAt';
 

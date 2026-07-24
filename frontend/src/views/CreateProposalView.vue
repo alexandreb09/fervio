@@ -34,6 +34,8 @@ const form = ref({
   description: '',
   city: '',
   postalCode: null,
+  latitude: null,
+  longitude: null,
   address: '',
   scheduledAt: '',
   duration: null,
@@ -93,6 +95,8 @@ onMounted(async () => {
       description: p.description || '',
       city: p.city,
       postalCode: p.postalCode,
+      latitude: p.latitude,
+      longitude: p.longitude,
       address: p.address || '',
       scheduledAt: toLocalDateTimeInput(p.scheduledAt),
       duration: p.duration,
@@ -182,7 +186,7 @@ async function submit() {
                 v-model="form.city"
                 placeholder="Paris"
                 input-class="field-input"
-                @city-selected="e => { form.city = e.name; form.postalCode = e.postalCode }"
+                @city-selected="e => { form.city = e.name; form.postalCode = e.postalCode; form.latitude = e.lat; form.longitude = e.lon }"
               />
               <p v-if="errors.city" class="field-error">{{ errors.city }}</p>
             </div>

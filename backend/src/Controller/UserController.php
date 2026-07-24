@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\GameProposalRepository;
 use App\Repository\UserRepository;
+use App\Service\GeoDistance;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,16 +21,31 @@ class UserController extends AbstractController
     #[Route('', name: 'api_users_list', methods: ['GET'])]
     public function list(Request $request, UserRepository $repo, NormalizerInterface $normalizer): JsonResponse
     {
+        $lat = $request->query->has('lat') ? (float) $request->query->get('lat') : null;
+        $lng = $request->query->has('lng') ? (float) $request->query->get('lng') : null;
+        $radiusKm = $request->query->has('radius') ? (int) $request->query->get('radius') : null;
+        $useRadius = $radiusKm !== null && $radiusKm > 0 && $lat !== null && $lng !== null;
+
         $users = $repo->findByFilters(
             $request->query->get('city'),
             $request->query->get('minRanking'),
             $request->query->get('maxRanking'),
             $request->query->get('gender'),
             $request->query->get('department'),
-            $request->query->get('sort')
+            $request->query->get('sort'),
+            $lat,
+            $lng,
+            $radiusKm
         );
 
-        return $this->json($normalizer->normalize($users, null, ['groups' => ['user:list']]));
+        $normalized = $normalizer->normalize($users, null, ['groups' => ['user:list']]);
+        if ($useRadius) {
+            foreach ($users as $i => $user) {
+                $normalized[$i]['distanceKm'] = round(GeoDistance::distanceKm($lat, $lng, (float) $user->getLatitude(), (float) $user->getLongitude()), 1);
+            }
+        }
+
+        return $this->json($normalized);
     }
 
     #[Route('/cities', name: 'api_users_cities', methods: ['GET'])]
@@ -174,6 +190,8 @@ class UserController extends AbstractController
         if (!empty($data['email']))                            $user->setEmail($data['email']);
         if (array_key_exists('city', $data))                   $user->setCity($data['city']);
         if (array_key_exists('postalCode', $data))             $user->setPostalCode(!empty($data['postalCode']) ? $data['postalCode'] : null);
+        if (array_key_exists('latitude', $data))               $user->setLatitude($data['latitude'] ?: null);
+        if (array_key_exists('longitude', $data))              $user->setLongitude($data['longitude'] ?: null);
         if (array_key_exists('fftRanking', $data))             $user->setFftRanking($data['fftRanking'] ?: null);
         if (array_key_exists('gender', $data))                 $user->setGender($data['gender']);
         if (array_key_exists('description', $data))            $user->setDescription($data['description']);
