@@ -10,6 +10,18 @@
     <meta name="theme-color" content="#C25228" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y8K4TRRKVB"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      // send_page_view désactivé : le site est une SPA, chaque changement de route
+      // est suivi manuellement via router.afterEach (voir src/router.js) pour éviter
+      // de ne tracker que le tout premier chargement de page.
+      gtag('config', 'G-Y8K4TRRKVB', { send_page_view: false });
+    </script>
+
     <title>Fervio — Trouvez votre partenaire de tennis en France</title>
     <meta name="description" content="Fervio, la plateforme gratuite pour trouver un partenaire de tennis près de chez vous. Publiez une partie, rejoignez des joueurs de votre niveau et progressez ensemble." />
     <meta name="keywords" content="partenaire de tennis, trouver partenaire tennis, partenaire raquette, trouver partenaire raquette, joueur de tennis, partie de tennis, club tennis, partennis, tennis contact, sport partner" />

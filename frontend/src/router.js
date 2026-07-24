@@ -236,6 +236,19 @@ function updateJsonLd(data) {
   el.textContent = JSON.stringify(data)
 }
 
+// Suivi des changements de route pour Google Analytics (gtag.js chargé avec
+// send_page_view: false dans index.html). Silencieux en dev pour ne pas
+// polluer les statistiques réelles, et si un bloqueur de pub empêche gtag.js
+// de se charger.
+function trackPageview(to) {
+  if (!import.meta.env.PROD || typeof window.gtag !== 'function') return
+  window.gtag('event', 'page_view', {
+    page_path: to.fullPath,
+    page_title: document.title,
+    page_location: window.location.href,
+  })
+}
+
 export function setupRouterGuards(router) {
   router.beforeEach(async (to) => {
     const auth = useAuthStore()
@@ -266,5 +279,9 @@ export function setupRouterGuards(router) {
     if (canonical) canonical.setAttribute('href', url)
 
     updateJsonLd(jsonLd)
+  })
+
+  router.afterEach((to) => {
+    trackPageview(to)
   })
 }
