@@ -116,7 +116,41 @@ class AuthController extends AbstractController
             // L'email n'a pas pu être envoyé mais le compte est créé
         }
 
+        $this->notifyAdminNewUser($mailer, $fervioEmail, $user);
+
         return $this->json($normalizer->normalize($user, null, ['groups' => ['user:read']]), 201);
+    }
+
+    /** Notification purement indicative à l'équipe : ne doit jamais faire échouer l'inscription. */
+    private function notifyAdminNewUser(MailerInterface $mailer, FervioEmail $fervioEmail, User $user): void
+    {
+        $rawEmails = $_ENV['MODERATION_EMAILS'] ?? '';
+        $emails    = array_filter(array_map('trim', explode(',', $rawEmails)));
+        if (!$emails) return;
+
+        $profileUrl = rtrim($_ENV['DEFAULT_URI'] ?? 'https://fervio.fr', '/') . '/joueurs/' . $user->getPublicId();
+        $fullName   = trim($user->getFirstName() . ' ' . ($user->getLastName() ?? ''));
+
+        $body = '<p style="margin:0 0 20px;font-size:15px;color:#78604E;line-height:1.6;">'
+            . 'Un nouveau joueur vient de s\'inscrire sur Fervio :'
+            . '</p>'
+            . '<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">'
+            . '<tr><td style="padding:6px 0;border-bottom:1px solid #F1E4D8;font-size:13px;color:#9A7B6A;">Nom</td>'
+            . '<td style="padding:6px 0;border-bottom:1px solid #F1E4D8;font-size:14px;color:#1A0F08;font-weight:600;text-align:right;">' . htmlspecialchars($fullName, ENT_QUOTES, 'UTF-8') . '</td></tr>'
+            . '<tr><td style="padding:6px 0;border-bottom:1px solid #F1E4D8;font-size:13px;color:#9A7B6A;">Email</td>'
+            . '<td style="padding:6px 0;border-bottom:1px solid #F1E4D8;font-size:14px;color:#1A0F08;text-align:right;">' . htmlspecialchars($user->getEmail(), ENT_QUOTES, 'UTF-8') . '</td></tr>'
+            . '<tr><td style="padding:6px 0;font-size:13px;color:#9A7B6A;">Ville</td>'
+            . '<td style="padding:6px 0;font-size:14px;color:#1A0F08;text-align:right;">' . htmlspecialchars($user->getCity() ?: '—', ENT_QUOTES, 'UTF-8') . '</td></tr>'
+            . '</table>'
+            . FervioEmail::button($profileUrl, 'Voir le profil');
+
+        foreach ($emails as $to) {
+            try {
+                $mailer->send($fervioEmail->build($to, 'Nouvelle inscription — Fervio', 'Admin', $body));
+            } catch (\Throwable) {
+                // Purement indicatif : on ignore silencieusement les échecs d'envoi
+            }
+        }
     }
 
     #[Route('/verify-email', name: 'api_verify_email', methods: ['GET'])]
